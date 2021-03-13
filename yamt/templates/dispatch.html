@@ -1,0 +1,21 @@
+{% extends "include/base.html" %}
+{% from "bootstrap/form.html" import render_form_row %}
+
+{% block content %}
+<h1 class="mt-5">Dispatch job!</h1>
+<form method="POST">
+    {{ render_form_row([start.input, start.output]) }}
+    {{ render_form_row([start.preset_name]) }}
+    <input type="submit" class="btn btn-info" value="RUN!">
+</form>
+<p>
+    <div class="form-group">
+        <label class="form-control-label">Command preview:</label>
+        <input class="form-control" id="command" readonly style="font-family: monospace">
+    </div>
+</p>
+{% endblock %}
+
+{% block scripts %}
+<script async src="{{ url_for('static', filename='view_settings.js') }}"></script>
+{% endblock %}

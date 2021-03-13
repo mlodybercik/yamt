@@ -1,0 +1,10 @@
+{% extends "include/base.html" %}
+{% from "include/macro.html" import render_state with context %}
+
+
+{% block content %}
+    <h1 class="mt-5">yamt</h1>
+        <pre>Worker: {{ worker.state_flag }}
+Watcher: {{ watcher.state_flag }}</pre>
+    {{ render_state(worker.state, worker.state_raw) }}
+{% endblock %}

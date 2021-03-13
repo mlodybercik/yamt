@@ -1,0 +1,10 @@
+{% extends "include/base.html" %}
+{% from "bootstrap/form.html" import render_form_row %}
+
+{% block content %}
+<h1 class="mt-5">Dispatch job!</h1>
+<form method="POST">
+    {{ render_form_row([test.file]) }}
+    <input type="submit" class="btn btn-info" value="test">
+</form>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "include/base.html" %}
+{% from "bootstrap/form.html" import render_form_row with context%}
+
+{% block content %}
+    <h1 class="mt-5">Create filesystem watcher!</h1>
+    <form method="POST">
+        {{ render_form_row([form.preset_name, form.name]) }}
+        {{ render_form_row([form.input_path, form.output_path]) }}
+        <input type="submit" class="btn btn-info" value="Create">
+    </form>
+    <p>
+        {% if watchers %}
+            <table class="table">
+                <thead>
+                    <th scope="col">Name:</th>
+                    <th scope="col">Preset:</th>
+                    <th scope="col">Input path:</th>
+                    <th scope="col">Output path:</th>
+                    <th scope="col">Running?</th>
+                </thead>
+                <tbody>
+                    {% for id, values in watchers.items() %}
+                        <tr>
+                            <th scope="row">{{ values[0] }} </th>
+                            <th>{{ values[1] }}</th>
+                            <th>{{ values[2] }}</th>
+                            <th>{{ values[3] }}</th>
+                            {% if values[4] %}
+                                <th id="{{ id }}"><input type="checkbox" class="running" value="{{ id }}" checked><span class="text-success"> Yes!</span></th>
+                            {% else %}
+                                <th id="{{ id }}"><input type="checkbox" class="running" value="{{ id }}"><span class="text-danger"> No!</span></th>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </p>
+{% endblock %}
+
+{% block scripts %}
+<script async src="{{ url_for('static', filename='view_add_watcher.js') }}"></script>
+{% endblock %}
