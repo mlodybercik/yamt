@@ -2,6 +2,7 @@ import logging
 logger = logging.getLogger(__name__)
 from flask import Blueprint, render_template, redirect
 from .. import worker, watcher, kill_app
+from ..pyhandbrake import TEST2
     
 main_view = Blueprint("main", __name__, template_folder="templates")
 
@@ -18,14 +19,17 @@ def kill():
     kill_app()
     return redirect("/")
 
+@main_view.route("/test")
+def test_asd():
+    class test_worker:
+        state_flag = "working"
+        state = (74.32, 0, 0, 0)
+        queuepeek = [TEST2,TEST2,TEST2,TEST2]
+        settings_input = "/smb/all/jakaś ścieżka/london.mp4"
+        settings_output = "/smb/all/jakaś inna ścieżka/london.m4v"
 
-# test
 
-# @main_view.route("/test", methods=("GET", "POST"))
-# def test_asd():
-#     test = Test(meta={"csrf": False})
-#     logger.debug(f"{watcher.is_alive()}")
-#     if test.validate_on_submit():
-#         return render_template("test.html", test=test)
-#     else:
-#         return render_template("test.html", test=test)
+    class test_watcher:
+        state_flag = "working"
+
+    return render_template("test.html", worker=test_worker(), watcher=test_watcher)

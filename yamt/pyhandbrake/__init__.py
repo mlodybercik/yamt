@@ -1,6 +1,7 @@
 import logging
 logger = logging.getLogger(__name__)
 import magic
+import shlex
 from dataclasses import dataclass, field
 from pathlib import Path
 from .type_declarations import SETTINGS, PositiveInteger, PositiveFloat
@@ -43,7 +44,7 @@ class HandbrakeSettings:
             elif name == "framerate_type":
                 command += SETTINGS[name][self.__getattribute__(name)]
             elif type_ == Path:
-                command += f"{SETTINGS[name]} {str(self.__getattribute__(name))}"
+                command += f"{SETTINGS[name]} '{str(self.__getattribute__(name))}'"
             else:
                 command += f"{SETTINGS[name]} {self.__getattribute__(name)}"
             command += " "
@@ -81,7 +82,11 @@ class HandbrakeFullSettings(HandbrakeSettings):
         command = f"HandBrakeCLI "
         return command + super().__str__()
 
-TEST = HandbrakeSettings(width=1280, height=720, adv_enc_settings="threads=1")
+TEST  = HandbrakeSettings(width=1280, height=720, adv_enc_settings="threads=1")
+TEST2 = HandbrakeFullSettings.from_settings(TEST, Path("source"), Path("output"))
 
 def is_video(filepath):
     return magic.from_file(filepath, mime=True).startswith("video")
+
+def better_split(str):
+    return shlex.split(str)

@@ -10,30 +10,32 @@
     </form>
     <p>
         {% if watchers %}
-            <table class="table">
-                <thead>
-                    <th scope="col">Name:</th>
-                    <th scope="col">Preset:</th>
-                    <th scope="col">Input path:</th>
-                    <th scope="col">Output path:</th>
-                    <th scope="col">Running?</th>
-                </thead>
-                <tbody>
-                    {% for id, values in watchers.items() %}
-                        <tr>
-                            <th scope="row">{{ values[0] }} </th>
-                            <th>{{ values[1] }}</th>
-                            <th>{{ values[2] }}</th>
-                            <th>{{ values[3] }}</th>
-                            {% if values[4] %}
-                                <th id="{{ id }}"><input type="checkbox" class="running" value="{{ id }}" checked><span class="text-success"> Yes!</span></th>
-                            {% else %}
-                                <th id="{{ id }}"><input type="checkbox" class="running" value="{{ id }}"><span class="text-danger"> No!</span></th>
-                            {% endif %}
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <th scope="col">Name:</th>
+                        <th scope="col">Preset:</th>
+                        <th scope="col">Input path:</th>
+                        <th scope="col">Output path:</th>
+                        <th scope="col">Running?</th>
+                    </thead>
+                    <tbody>
+                        {% for id, values in watchers.items() %}
+                            <tr class="text-monospace">
+                                <td scope="row">{{ values[0] }} </td>
+                                <td>{{ values[1] }}</td>
+                                <td>{{ values[2] }}</td>
+                                <td>{{ values[3] }}</td>
+                                {% if values[4] %}
+                                    <td id="{{ id }}"><input type="checkbox" class="running" value="{{ id }}" checked><span class="text-success"> Yes!</span></td>
+                                {% else %}
+                                    <td id="{{ id }}"><input type="checkbox" class="running" value="{{ id }}"><span class="text-danger"> No!</span></td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         {% endif %}
     </p>
 {% endblock %}

@@ -13,8 +13,10 @@ logging.basicConfig(format="%(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-encoding_queue = multiprocessing.Queue()
-message_queue = multiprocessing.Queue()
+from .queue import PeekableQueue
+
+encoding_queue = PeekableQueue()
+message_queue = PeekableQueue()
 
 from .pyhandbrake.worker import Worker
 from .pyhandbrake import TEST

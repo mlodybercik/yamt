@@ -1,9 +1,7 @@
-{% macro render_state(state, state_raw) %}
-    {% if state != None %}
-    <div class="progress">
+{% macro render_state(state) %}
+    <div class="progress">    
         <div class="progress-bar" role="progressbar" style="width: {{ state[0] }}%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{ state[0] }}%</div>
     </div>
-    {% endif %}
 {% endmacro %}
 
 {# yeah i know, thats very dirty #}
@@ -13,8 +11,7 @@
         {% if add_group %}
             <div class="form-group row{% if required %} required{% endif %}">{% endif %}
         <div class="offset-{{ horizontal_columns[0] }}-{{ horizontal_columns[1] }}
-              col-{{ horizontal_columns[0] }}-{{ horizontal_columns[2] }}
-             ">
+              col-{{ horizontal_columns[0] }}-{{ horizontal_columns[2] }}">
     {% endif %}
 {{ caller() }}
 
@@ -51,5 +48,7 @@
 
 {% endmacro %}
 
-
+{% macro render_time_left(state) %}
+        {{ state }}
+{% endmacro %}
 
