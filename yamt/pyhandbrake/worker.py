@@ -57,15 +57,18 @@ class Worker(Thread):
             self.process = Popen(running_settings , stdout=PIPE, stderr=PIPE, text=True)
 
             while self.process.poll() is None:
-                # TODO: this line shouldnt always go into loop
-                while (output := self.process.stdout.readline()) != "\n" and self.process.poll() is None:
+                # self.process.stdout.readline() is blocking :/
+                while (output := self.process.stdout.readline()) and self.process.poll() is None:
+                    # rn im using blocking readline to time rest of the loop
                     self.state = self.update_state(output)
                     self.state_raw = output
-                try:
-                    signal = try_(self.signal.get, Empty, timeout=1)
-                except (ValueError, OSError):
-                    self.process.kill()
-                    self.should_exit = True
+                    try:
+                        signal = try_(self.signal.get, Empty, block=False)
+                    except (ValueError, OSError):
+                        self.process.kill()
+                        self.should_exit = True
+                        break
+                if self.should_exit:
                     break
 
             self.state_flag = State.WAITING

@@ -28,7 +28,10 @@ class AutomaticDispatcher(FileSystemEventHandler):
                         output=self.output / output_file,
                         settings=self.settings)
                     
-                    self.task_queue.put(full_settings)
+                    try:
+                        self.task_queue.put(full_settings)
+                    except ValueError:
+                        logger.warning("Tried to put work in closed queue.")
 
 class ControlQueueObserver(InotifyEmitter):
         def __init__(self, message_queue, *args, **kwargs):

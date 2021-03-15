@@ -8,9 +8,10 @@ flask = "*"
 bootstrap-flask = "*"
 flask-wtf = "*"
 flask-sqlalchemy = "*"
-flask-socketio = "*"
 watchdog = "*"
 python-magic = "*"
+pathvalidate = "*"
+sqlalchemy = "==1.3"
 
 [dev-packages]
 

@@ -1,5 +1,3 @@
-from os import stat
-from sqlalchemy.orm import relationship
 from . import db
 
 class Settings(db.Model):
@@ -35,13 +33,13 @@ class Watchers(db.Model):
 
     @staticmethod
     def parse_from_form(form):
-        return Watchers(settings_id=form["preset_name"], name=form["name"], \
+        return __class__(settings_id=form["preset_name"], name=form["name"], \
                         input_path=str(form["input_path"]), output_path=str(form["output_path"]))
 
     @staticmethod
     def create_select():
         presets = {}
-        for entry in Watchers.query.all():
+        for entry in __class__.query.all():
             presets[entry.local_id] = (entry.name, entry.settings.name, \
                                        entry.input_path, entry.output_path, \
                                        entry.enabled)
@@ -49,7 +47,7 @@ class Watchers(db.Model):
 
     @staticmethod
     def register_all_watchers(watcher):
-        for entry in Watchers.query.all():
+        for entry in __class__.query.all():
             if entry.enabled:
                 watcher.schedule_new(entry.local_id, entry.input_path, entry.output_path, entry.settings.settings)
     

@@ -2,7 +2,8 @@ import logging
 logger = logging.getLogger(__name__)
 from flask import Blueprint, render_template, redirect
 from .. import worker, watcher, kill_app
-from ..pyhandbrake import TEST2
+# from ..pyhandbrake import TEST2
+# thats just for testing
     
 main_view = Blueprint("main", __name__, template_folder="templates")
 
@@ -12,7 +13,11 @@ def hello():
 
 @main_view.route("/")
 def index():
-    return render_template("main.html", worker=worker, watcher=watcher)
+    try:
+        worker_queue = worker.queue.peek()
+    except ValueError:
+        worker_queue = []
+    return render_template("main.html", worker=worker, watcher=watcher, worker_queue=worker_queue)
 
 @main_view.route("/kill")
 def kill():
@@ -21,15 +26,4 @@ def kill():
 
 @main_view.route("/test")
 def test_asd():
-    class test_worker:
-        state_flag = "working"
-        state = (74.32, 0, 0, 0)
-        queuepeek = [TEST2,TEST2,TEST2,TEST2]
-        settings_input = "/smb/all/jakaś ścieżka/london.mp4"
-        settings_output = "/smb/all/jakaś inna ścieżka/london.m4v"
-
-
-    class test_watcher:
-        state_flag = "working"
-
-    return render_template("test.html", worker=test_worker(), watcher=test_watcher)
+    return render_template("test.html")

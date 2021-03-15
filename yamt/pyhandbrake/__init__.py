@@ -83,7 +83,7 @@ class HandbrakeFullSettings(HandbrakeSettings):
         return command + super().__str__()
 
 TEST  = HandbrakeSettings(width=1280, height=720, adv_enc_settings="threads=1")
-TEST2 = HandbrakeFullSettings.from_settings(TEST, Path("source"), Path("output"))
+#TEST2 = HandbrakeFullSettings.from_settings(TEST, Path("source"), Path("output"))
 
 def is_video(filepath):
     return magic.from_file(filepath, mime=True).startswith("video")

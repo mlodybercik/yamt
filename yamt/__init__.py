@@ -1,8 +1,7 @@
 from flask import Flask
-from os import urandom
+from os import kill, urandom
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
-import multiprocessing
 
 import logging
 log = logging.getLogger('werkzeug')
@@ -34,16 +33,17 @@ def create_app() -> Flask:
     app.secret_key = urandom(32).hex()
     Bootstrap(app)
 
-    from .models import Settings
     db.init_app(app)
+
+    from .models import Settings
     @app.cli.command("create_database")
     def create_db():
         db.create_all()
         default = Settings(name="Default", settings=TEST)
         db.session.add(default)
         db.session.commit()
-        message_queue.put(1)
-        message_queue.put(1)
+        kill_app()
+
 
     from .views import views
     for blueprint in views:

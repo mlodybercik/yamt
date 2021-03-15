@@ -18,7 +18,10 @@ def dispatch():
         try:
             return redirect("/")
         finally:
-            logger.debug(f"Adding {str(full_settings)} to queue.")
-            worker.queue.put(full_settings)
+            try:
+                worker.queue.put(full_settings)
+                logger.debug(f"Adding {str(full_settings)} to queue.")
+            except ValueError:
+                logger.warning("Tried to dispatch work to empty queue.")
     else:
         return render_template("dispatch.html", start=start)

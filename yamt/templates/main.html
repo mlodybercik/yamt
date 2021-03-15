@@ -6,40 +6,44 @@
     <div class="col-sm-12 mb-3 px-0">
         <div class="card">
             <div class="card-body">
-                {% if worker.state_flag.value == 2 %}
-                <h5 class="card-title">Current task:</h5>
-                {{ render_state(worker.state) }}
-                <div class="table-responsive">
-                    <table class="table mb-0">
-                        <thead>
-                            <tr>
-                                <th>Input:</th>
-                                <th>Output:</th>
-                                <th>Time remaining:</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="text-monospace" scope="row">{{ worker.settings.input }}</td>
-                                <td class="text-monospace">{{ worker.settings.output }}</td>
-                                {% if worker.state[3] == 0 %}
-                                    <td class="text-monospace">Waiting for handbrake...</td>
-                                {% else %}
-                                    <td class="text-monospace">{{ worker.state[3] }}</td>
-                                {% endif %}
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                {% if worker.state_flag.value %}
+                    {% if worker.state_flag.value == 2 %}
+                        <h5 class="card-title">Current task:</h5>
+                        {{ render_state(worker.state) }}
+                        <div class="table-responsive">
+                            <table class="table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Input:</th>
+                                        <th>Output:</th>
+                                        <th>Time remaining:</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="text-monospace" scope="row">{{ worker.settings.input }}</td>
+                                        <td class="text-monospace">{{ worker.settings.output }}</td>
+                                        {% if worker.state[3] == 0 %}
+                                            <td class="text-monospace">Waiting for handbrake...</td>
+                                        {% else %}
+                                            <td class="text-monospace">{{ worker.state[3] }}</td>
+                                        {% endif %}
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <h5 class="card-title mb-0">No task is running right now.</h5>
+                    {% endif %}
                 {% else %}
-                <h5 class="card-title mb-0">No task is running right now!</h5>
+                    <h5 class="card-title mb-0">Worker is dead.</h5>
                 {% endif %}
             </div>
         </div>
     </div>
     <a class="btn btn-primary mb-3" data-toggle="collapse" href="#collapsable" role="button" aria-expanded="false" aria-controls="collapsable">Show pending tasks</a>
     <div class="collapse row" id="collapsable">
-        {% for item in worker.queue.peek() %}
+        {% for item in worker_queue %}
         <div class="col-sm-6 mb-3">
             <div class="card">
                 <div class="card-body">
