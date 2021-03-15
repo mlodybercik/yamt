@@ -35,10 +35,6 @@ def bulk_path_validate(data, abs=True):
         elif e.reason == ErrorReason.MALFORMED_ABS_PATH and abs:
             raise wtfValidationError("Malformed absolute path.")
 
-def positive_number(form, field):
-    if field.data == None or field.data < 0:
-        raise wtfValidationError("Number should be positive.")
-
 def path_to_file(form, field):
     try:
         file_path = Path(field.data)

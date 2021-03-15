@@ -16,7 +16,7 @@ class HandbrakeSettings:
     v_encoder: str = "x264"
     a_encoder: str = "copy"
     bitrate: int = -1
-    quality: PositiveInteger = -1
+    quality: PositiveFloat = -1.0
     framerate: PositiveFloat = -1.0
     two_pass: bool = False
     framerate_type: str = ""
@@ -27,21 +27,19 @@ class HandbrakeSettings:
                 continue
             if issubclass(type(self.__getattribute__(name)), Path):
                 continue
-            assert type(self.__getattribute__(name)) == type_, f"{type(self.__getattribute__(name))} {name} {type_} {self.__getattribute__(name)}"
+            assert type(self.__getattribute__(name)) == type_, f"Got {type(self.__getattribute__(name))} instead of {type_} {name}:{self.__getattribute__(name)}"
         logger.debug(f"Created settings: {self.__str__()}")
 
     def __str__(self):
         command = ""
         for name, type_ in self.__annotations__.items():
-            # if bool, just insert corresponding switch
             if type_ == bool:
                 command += f"{SETTINGS[name]}"
-            # if string but empty then dont include it
             elif type_ == str and self.__getattribute__(name) == "":
                 continue
             elif (type_ == PositiveInteger or type_ == PositiveFloat) and self.__getattribute__(name) == -1:
                 continue
-            elif name == "framerate_type":
+            elif type(SETTINGS[name]) == dict:
                 command += SETTINGS[name][self.__getattribute__(name)]
             elif type_ == Path:
                 command += f"{SETTINGS[name]} '{str(self.__getattribute__(name))}'"
