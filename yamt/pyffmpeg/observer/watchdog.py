@@ -6,7 +6,7 @@ from watchdog.observers.api import BaseObserver, DEFAULT_OBSERVER_TIMEOUT,\
                                    ObservedWatch, EventDispatcher
 from queue import Empty
 from pathlib import Path
-from .. import HandbrakeFullSettings, is_video
+from .. import ffmpegFullSettings, is_video
 from ..worker import try_
 
 class AutomaticDispatcher(FileSystemEventHandler):
@@ -23,7 +23,7 @@ class AutomaticDispatcher(FileSystemEventHandler):
             if is_video(event.src_path) and path.is_file():
                 output_file = path.name
                 if len(output_file.split(".")) >= 2:
-                    full_settings = HandbrakeFullSettings.from_settings(
+                    full_settings = ffmpegFullSettings.from_settings(
                         input=path,
                         output=self.output / output_file,
                         settings=self.settings)

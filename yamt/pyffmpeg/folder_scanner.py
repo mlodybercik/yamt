@@ -1,6 +1,5 @@
 import logging
 logger = logging.getLogger(__name__)
-from queue import Queue
 from .observer.watchdog import QueueInotifyObserver, AutomaticDispatcher
 from .type_declarations import State
 

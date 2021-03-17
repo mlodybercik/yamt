@@ -20,6 +20,11 @@ class PathField(Field):
         else:
             self.data = None
 
+def positive_or_one(form, field):
+    if field.data is not None:
+        if field.data != -1 and field.data <= 0:
+            raise wtfValidationError("Bad value!")
+
 def bulk_path_validate(data, abs=True):
     try:
         validate_filepath(data, "Linux", check_reserved=True)

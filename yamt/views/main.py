@@ -2,9 +2,7 @@ import logging
 logger = logging.getLogger(__name__)
 from flask import Blueprint, render_template, redirect
 from .. import worker, watcher, kill_app
-# from ..pyhandbrake import TEST2
-# thats just for testing
-    
+
 main_view = Blueprint("main", __name__, template_folder="templates")
 
 @main_view.route("/ping")

@@ -17,9 +17,9 @@ from .queue import PeekableQueue
 encoding_queue = PeekableQueue()
 message_queue = PeekableQueue()
 
-from .pyhandbrake.worker import Worker
-from .pyhandbrake import TEST
-from .pyhandbrake.folder_scanner import FileWatcher
+from .pyffmpeg.worker import Worker
+from .pyffmpeg import TEST
+from .pyffmpeg.folder_scanner import FileWatcher
 
 db = SQLAlchemy()
 worker = Worker(encoding_queue, message_queue)
@@ -42,8 +42,6 @@ def create_app() -> Flask:
         default = Settings(name="Default", settings=TEST)
         db.session.add(default)
         db.session.commit()
-        kill_app()
-
 
     from .views import views
     for blueprint in views:
@@ -53,10 +51,15 @@ def create_app() -> Flask:
 
     @app.before_first_request # FIXME: i really have to find better alternative to this
     def setup(): 
-        logger.debug("Starting all worker threads.")
-        worker.start()
-        watcher.start()
-        Watchers.register_all_watchers(watcher)
+        from sqlalchemy.exc import OperationalError
+        try:
+            Watchers.register_all_watchers(watcher)
+        except OperationalError:
+            logger.warn("Couldn't load watchers.")
+        finally:
+            worker.start()
+            watcher.start()
+            logger.debug("Starting all worker threads.")
     
     return app
 

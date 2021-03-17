@@ -3,7 +3,7 @@ logger = logging.getLogger(__name__)
 from flask import Blueprint, render_template, redirect
 from ..models import Settings
 from ..forms.dispatch_job import Start
-from ..pyhandbrake import HandbrakeFullSettings
+from ..pyffmpeg import ffmpegFullSettings
 from .. import worker
 
 dispatch_job = Blueprint("dispatch_job", __name__, template_folder="templates")
@@ -14,7 +14,7 @@ def dispatch():
     start.preset_name.choices = Settings.create_select()
     if start.validate_on_submit():
         settings = Settings.query.filter_by(local_id=start.data["preset_name"]).first().settings
-        full_settings = HandbrakeFullSettings.from_settings(input=start.data["input"], output=start.data["output"], settings=settings)
+        full_settings = ffmpegFullSettings.from_settings(input=start.data["input"], output=start.data["output"], settings=settings)
         try:
             return redirect("/")
         finally:

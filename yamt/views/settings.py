@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, request, flash
 from traceback import format_exception
 from ..forms.create_settings import CreateSettings
-from ..pyhandbrake.type_declarations import SETTINGS
-from ..pyhandbrake import HandbrakeSettings
+from ..pyffmpeg.type_declarations import SETTINGS
+from ..pyffmpeg import ffmpegSettings
 from ..models import Settings
 from .. import db
 
@@ -20,9 +20,9 @@ def add_settings():
                 form_data[key] = value
             name = form_data["preset_name"]
             form_data = {x:form_data[x] for x in form_data if x in SETTINGS}
-            settings = HandbrakeSettings(**form_data)
+            settings = ffmpegSettings.init_from_unsure(**form_data)
         except Exception as e:
-            flash(f"{format_exception(type(e), e, e.__traceback__)}", "error")
+            flash(f"{''.join(format_exception(type(e), e, e.__traceback__))}", "error")
             return render_template("settings.html", form=form)
         new_settings = Settings(name=name, settings=settings)
         db.session.add(new_settings)

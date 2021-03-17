@@ -25,12 +25,12 @@ class Worker(Thread):
     def __init__(self, queue: Queue, signal: Queue):
         self.queue = queue
         self.signal = signal
-        logger.debug("Creating handbrake worker thread:")
+        logger.debug("Creating worker thread:")
         super().__init__()
 
     def run(self):
         signal = None
-        logger.info("Handbrake worker started, waiting for inputs:")
+        logger.info("Worker started, waiting for inputs:")
         self.state_flag = State.WAITING
         while True:
             while True:
@@ -73,7 +73,7 @@ class Worker(Thread):
 
             self.state_flag = State.WAITING
             logger.info(f"Work done: {self.settings}")
-            logger.info(f"Handbrake exited: {self.process.returncode}")
+            logger.info(f"Subprocess exited: {self.process.returncode}")
             self.settings = None
             self.state = None
             self.state_raw = None
@@ -83,10 +83,20 @@ class Worker(Thread):
 
 
     def update_state(self, output):
-        # Encoding: task 1 of 1, 82.24 % (11.17 fps, avg 12.36 fps, ETA 00h00m04s)
-        #     0       1  2 3  4    5   6    7    8    9   10    11   12     13
+        # frame=12                    # int       current frame of an video
+        # fps=0.00                    # float     conversion speed
+        # stream_0_0_q=0.0            # garbage
+        # bitrate=N/A                 # int       current bitrate
+        # total_size=44               # int       current size
+        # out_time_us=0               # garbage
+        # out_time_ms=0               # garbage
+        # out_time=00:00:00.000000    # garbage
+        # dup_frames=0                # garbage
+        # drop_frames=0               # garbage
+        # speed=   0x                 # conversion speed
+        # progress=continue           # what its doing rn
         try:
-            output = output.split(" ")
+            output = output.split("\n")
             percent = float(output[5])
             try:
                 curr_fps = float(output[7][1:])

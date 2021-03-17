@@ -1,22 +1,9 @@
 {% extends "include/base.html" %}
-{% from "bootstrap/form.html" import render_form_row, render_field %}
-{% from "include/macro.html" import render_checkbox with context %}
+{% from "bootstrap/form.html" import render_form %}
 
 {% block content %}
 <h1 class="mt-5">Create new settings!</h1>
 <form method="POST">
-    {{ render_form_row([form.preset_name]) }}
-    {{ render_form_row([form.v_encoder, form.a_encoder, form.width, form.height], col_class_default="col-md-3")}}
-    {{ render_form_row([form.adv_enc_settings, form.framerate, form.bitrate, form.quality], col_class_default="col-md-3") }}
-    <div class="form-row">
-        <div class="col-md-6">
-            {{ render_field(form.framerate_type) }}
-        </div>
-        <div class="col-md-6">
-            {{ render_checkbox(form.optimise) }}
-            {{ render_checkbox(form.two_pass) }}
-        </div>
-    </div>
-    <input type="submit" class="btn btn-info" value="Add">
+    {{ render_form(form) }}
 </form>
 {% endblock %}
