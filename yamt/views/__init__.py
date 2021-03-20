@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger("views")
+
 from .dispatch_job import dispatch_job
 from .main import main_view
 from .settings import settings_view

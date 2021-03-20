@@ -1,8 +1,6 @@
-import logging
-logger = logging.getLogger(__name__)
 from .observer.watchdog import QueueInotifyObserver, AutomaticDispatcher
 from .type_declarations import State
-
+from . import logger
 
 class FileWatcher:
     _scheduled_tasks = {}

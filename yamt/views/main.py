@@ -1,7 +1,6 @@
-import logging
-logger = logging.getLogger(__name__)
 from flask import Blueprint, render_template, redirect
 from .. import worker, watcher, kill_app
+from . import logger
 
 main_view = Blueprint("main", __name__, template_folder="templates")
 

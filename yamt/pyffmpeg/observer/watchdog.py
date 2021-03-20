@@ -1,11 +1,10 @@
-import logging
-logger = logging.getLogger(__name__)
 from watchdog.events import FileSystemEventHandler, FileCreatedEvent
 from watchdog.observers.inotify import InotifyEmitter
 from watchdog.observers.api import BaseObserver, DEFAULT_OBSERVER_TIMEOUT,\
-                                   ObservedWatch, EventDispatcher
+                                   ObservedWatch
 from queue import Empty
 from pathlib import Path
+from . import logger
 from .. import ffmpegFullSettings, is_video
 from ..worker import try_
 

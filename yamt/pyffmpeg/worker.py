@@ -1,34 +1,37 @@
-import logging
-logger = logging.getLogger(__name__)
-from .type_declarations import State
-from subprocess import PIPE, Popen
+from subprocess import PIPE, Popen, run as sub_run
+from datetime import timedelta
 from threading import Thread
-from queue import Queue, Empty
-from . import better_split
-
-def try_(function, exception, *args, **kwargs):
-    try:
-        return function(*args, **kwargs)
-    except exception:
-        pass
+from pathlib import Path
+from time import time
+from typing import Type
+from . import better_split, logger
+from .type_declarations import State
+from ..queue import PeekableQueue, Empty, try_
 
 class Worker(Thread):
     process = None
     state_flag = State.UNKNOWN
     state = None
-    state_raw = None
     should_exit = False
     queue = None
     signal = None
     settings = None
 
-    def __init__(self, queue: Queue, signal: Queue):
+    def __init__(self, queue: PeekableQueue, signal: PeekableQueue) -> None:
         self.queue = queue
         self.signal = signal
         logger.debug("Creating worker thread:")
         super().__init__()
 
-    def run(self):
+    @staticmethod
+    def get_video_duration(input: Path) -> float:
+        command = "ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "
+        command += str(input)
+        output = sub_run(better_split(command), capture_output=True, check=True)
+        logger.debug((_ := float(output.stdout.decode("ascii")[:-1])))
+        return _
+
+    def run(self) -> None:
         signal = None
         logger.info("Worker started, waiting for inputs:")
         self.state_flag = State.WAITING
@@ -51,17 +54,26 @@ class Worker(Thread):
 
             assert self.settings != None, "Settings are None???"
             
+            video_duration = self.get_video_duration(self.settings.input)
+
             running_settings = better_split(str(self.settings))
             self.state_flag = State.WORKING
+            start_time = time()
             logger.info(f"Got work to do: {self.settings}")
-            self.process = Popen(running_settings , stdout=PIPE, stderr=PIPE, text=True)
+            self.process = Popen(running_settings, stdout=PIPE, stderr=PIPE, text=True)
 
             while self.process.poll() is None:
                 # self.process.stdout.readline() is blocking :/
+                temp = ""
                 while (output := self.process.stdout.readline()) and self.process.poll() is None:
                     # rn im using blocking readline to time rest of the loop
-                    self.state = self.update_state(output)
-                    self.state_raw = output
+                    if "progress" not in output:
+                        temp += output
+                        continue
+                    else:
+                        temp += output
+                        self.state = self.update_state(video_duration, start_time, temp)
+                        temp = ""
                     try:
                         signal = try_(self.signal.get, Empty, block=False)
                     except (ValueError, OSError):
@@ -76,39 +88,52 @@ class Worker(Thread):
             logger.info(f"Subprocess exited: {self.process.returncode}")
             self.settings = None
             self.state = None
-            self.state_raw = None
 
         self.state_flag = State.DEAD
         logger.debug("Worker dead")
 
 
-    def update_state(self, output):
+    def update_state(self, video_duration: float, time_from_start: float, output: str) -> dict:
         # frame=12                    # int       current frame of an video
         # fps=0.00                    # float     conversion speed
-        # stream_0_0_q=0.0            # garbage
+        # stream_0_0_q=0.0            # 
         # bitrate=N/A                 # int       current bitrate
         # total_size=44               # int       current size
-        # out_time_us=0               # garbage
-        # out_time_ms=0               # garbage
-        # out_time=00:00:00.000000    # garbage
-        # dup_frames=0                # garbage
-        # drop_frames=0               # garbage
-        # speed=   0x                 # conversion speed
-        # progress=continue           # what its doing rn
+        # out_time_us=0               # 
+        # out_time_ms=0               # int       current frame, time in ms
+        # out_time=00:00:00.000000    # 
+        # dup_frames=0                # 
+        # drop_frames=0               # 
+        # speed=   0x                 # float     conversion speed
+        # progress=continue           #           what its doing rn
+        output = output.split("\n")
+        timed = time() - time_from_start
+
         try:
-            output = output.split("\n")
-            percent = float(output[5])
-            try:
-                curr_fps = float(output[7][1:])
-                avg_fps = float(output[10])
-                eta = output[13][:-2]
-            except (ValueError, IndexError):
-                return (percent, 0, 0, 0)
-        except (ValueError, IndexError):
-            return (0, 0, 0, 0)
-        return (percent, curr_fps, avg_fps, eta)
+            current_frame = int(output[0][6:])
+            fps = float(output[1][4:])
+            time_in_s = int(output[6][12:])/1e6
+            conversion_speed=output[10][6:]
+        except IndexError:
+            return None
+        
+        percent = time_in_s / video_duration
+        
+        try:
+            estimated = round(((1 / percent) * timed) - timed)
+            minutes, seconds = divmod(estimated, 60)
+            hours, minutes = divmod(minutes, 60)
+            estimated = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+        except (TypeError, ZeroDivisionError):
+            estimated = None
 
-
-    def handle_signal(self, signal):
+        return {"current_frame": current_frame,
+                "fps": fps,
+                "time_in_s": time_in_s,
+                "conversion_speed": conversion_speed,
+                "estimated": estimated,
+                "percent": __ if (__ := round(percent*100, 2)) >= 0 else 0,}
+            
+    def handle_signal(self, signal: int) -> bool:
         if signal == 1:
             return True

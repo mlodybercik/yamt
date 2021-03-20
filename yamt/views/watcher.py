@@ -1,8 +1,6 @@
-import logging
-
 from flask.globals import request
-logger = logging.getLogger(__name__)
-from flask import Blueprint, render_template, flash, Response
+from flask import Blueprint, render_template, flash
+from . import logger
 from ..forms.create_filewatch import CreateFileWatch
 from ..models import Settings, Watchers
 from .. import db, watcher

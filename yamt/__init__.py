@@ -1,5 +1,5 @@
 from flask import Flask
-from os import kill, urandom
+from os import urandom
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 
@@ -8,9 +8,12 @@ log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
 
-logging.basicConfig(format="%(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+logging.basicConfig(format="%(asctime)s %(name)-8s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+
+for logger_ in ["pyffmpeg", "views", "observer"]:
+    logging.getLogger(logger_).setLevel(logging.DEBUG)
+
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 from .queue import PeekableQueue
 

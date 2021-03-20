@@ -1,6 +1,5 @@
-import logging
-logger = logging.getLogger(__name__)
 from flask import Blueprint, render_template, redirect
+from . import logger
 from ..models import Settings
 from ..forms.dispatch_job import Start
 from ..pyffmpeg import ffmpegFullSettings

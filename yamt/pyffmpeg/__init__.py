@@ -1,5 +1,3 @@
-import logging
-logger = logging.getLogger(__name__)
 import magic
 import shlex
 from dataclasses import dataclass, field
@@ -7,6 +5,8 @@ from pathlib import PosixPath as Path
 from .type_declarations import SETTINGS, PositiveInteger, PositiveFloat, \
                                Size, DefaultPostInit
 
+import logging
+logger = logging.getLogger("pyffmpeg")
 
 @dataclass
 class ffmpegSettings:
@@ -91,7 +91,7 @@ class ffmpegFullSettings(ffmpegSettings):
 
     def __str__(self):
         # it has to be `-y` or itll hang
-        command = f"ffmpeg -y -progress pipe:0"
+        command = f"ffmpeg -y -progress pipe:1 "
         return command + super().__str__()
 
 TEST = ffmpegSettings(widthxheight=Size(1280, 720))
