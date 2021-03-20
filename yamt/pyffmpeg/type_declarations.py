@@ -1,10 +1,75 @@
 from dataclasses import dataclass
 from enum import Enum
 
+class TypeMismatch(Exception):
+    def __init__(self, got, instead, inside, name, *args, **kwargs):
+        message = f"Got {type(got)} "+\
+                  f"instead of {instead} "+\
+                  f"inside of {inside} "+\
+                  f"{name}:{got}"
+
+        super().__init__(self, message, *args, **kwargs)
+
 class DefaultPostInit:
     def __post_init__(self):
         for name, type_ in self.__annotations__.items():
-            assert type(self.__getattribute__(name)) == type_, f"Got {type(self.__getattribute__(name))} " + f"instead of {type_} {name}:{self.__getattribute__(name)} " + f"inside of {self.__class__}"
+            if type(self.__getattribute__(name)) != type_:
+                raise TypeMismatch(self.__getattribute__(name), type_, self.__class__, name)
+
+FRAMERATE_TYPE = {
+    "PS": "-vsync 0",
+    "REGEN": "-vsync drop",
+    "CFR": "-vsync 1",
+    "VFR": "-vsync 2",
+    "AUTO": "-vsync -1",
+}
+
+V_ENCODERS = {
+    # TODO: dynamicly create those settings
+    "x264": "-c:v libx264",
+    "x265": "-c:v libx265",
+    "x264 NVENC": "-c:v nvenc_264",
+    "x265 NVENC": "-c:v nvenc_hevc",
+    "COPY": "-c:v copy",
+}
+
+A_ENCODERS = {
+    # TODO: dynamicly create those settings
+    "AAC": "-c:a aac",
+    "FLAC": "-c:a flac",
+    "MP3": "-c:a libmp3lame",
+    "OPUS": "-c:a libopus",
+    "COPY": "-c:a copy",
+}
+
+SETTINGS = {
+    # TODO: add more settings
+    "input": "-i",
+    "output": "",
+    "preset": "",
+    "framerate": "-r",
+    "quality": "-crf",
+    "web_optimise": "-movflags +faststart",
+    "a_bitrate": "-b:a",
+    "a_samplerate": "-ar",
+    "a_encoder": A_ENCODERS,
+    "v_bitrate": "-b:v",
+    "v_encoder": V_ENCODERS,
+    "framerate_type": FRAMERATE_TYPE,
+}
+
+QUALITY_PRESET = [
+    "ultrafast",
+    "superfast",
+    "veryfast",
+    "faster",
+    "fast",
+    "medium",
+    "slow",
+    "slower",
+    "veryslow",
+    "placebo",
+]
 
 @dataclass
 class Size:
@@ -61,46 +126,21 @@ class PositiveFloat:
 
     def __eq__(self, o) -> bool:
         return o == self.value
-        
 
-FRAMERATE_TYPE = {
-    "PS": "-vsync 0",
-    "REGEN": "-vsync drop",
-    "CFR": "-vsync 1",
-    "VFR": "-vsync 2",
-    "AUTO": "-vsync -1",
-}
+@dataclass
+class Preset:
+    name: str
 
-V_ENCODERS = {
-    # TODO: dynamicly create those settings
-    "x264": "-c:v libx264",
-    "x265": "-c:v libx265",
-    "x264 NVENC": "-c:v nvenc_264",
-    "x265 NVENC": "-c:v nvenc_hevc",
-    "COPY": "-c:v copy",
-}
-
-A_ENCODERS = {
-    # TODO: dynamicly create those settings
-    "AAC": "-c:a aac",
-    "FLAC": "-c:a flac",
-    "MP3": "-c:a libmp3lame",
-    "OPUS": "-c:a libopus",
-    "COPY": "-c:a copy",
-}
-
-SETTINGS = {
-    # TODO: add more settings
-    "input": "-i",
-    "output": "",
-    "framerate": "-r",
-    "a_bitrate": "-b:a",
-    "a_samplerate": "-ar",
-    "a_encoder": A_ENCODERS,
-    "v_bitrate": "-b:v",
-    "v_encoder": V_ENCODERS,
-    "framerate_type": FRAMERATE_TYPE,
-}
+    def __post_init__(self):
+        DefaultPostInit.__post_init__(self)
+        if self.name not in QUALITY_PRESET:
+            raise AttributeError(f"Preset {self.name} does not exist")
+    
+    def __str__(self):
+        if self.name == "medium":
+            return ""
+        else:
+            return f"-preset {self.name}"
 
 class State(Enum):
     UNKNOWN = None

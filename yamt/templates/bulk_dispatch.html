@@ -1,0 +1,52 @@
+{% extends "include/base.html" %}
+{% from "bootstrap/form.html" import render_form_row %}
+
+{% block content %}
+<h1 class="mt-5">Bulk job dispatch!</h1>
+<div class="form-row">
+    <div class="col">
+        <div class="form-group">
+            <label class="form-control-label" for="input">File input prefix:</label>
+            <input class="form-control" id="input" name="input" required type="text">
+        </div>
+    </div>
+    <div class="col">
+        <div class="form-group">
+            <label class="form-control-label" for="output">File output prefix:</label>
+            <input class="form-control" id="output" name="output" required type="text">
+        </div>
+    </div>
+    <div class="col">
+        <div class="form-group">
+            <label class="form-control-label" for="input">Default preset for creation</label>
+            <select class="form-control" id="preset_name" name="preset_name" required="">
+                {{-options }}
+            </select>
+        </div>
+    </div>
+</div>
+
+<p>
+    <button type="button" class="btn btn-success" id="add">Add</button> 
+    <button type="button" class="btn btn-danger mr-5" id="remove">Remove</button> 
+    <button type="button" class="btn btn-outline-dark" id="run">Dispatch!</button>
+</p>
+
+<div class="container" id="target">
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Input</th>
+            <th scope="col">Output</th>
+            <th scope="col">Preset</th>
+        </tr>
+    </thead>
+    <tbody id="table">
+    </tbody>
+</table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script async src="{{ url_for('static', filename='bulk_dispatch.js') }}"></script>
+{% endblock %}

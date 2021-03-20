@@ -8,6 +8,8 @@ from . import logger
 from .. import ffmpegFullSettings, is_video
 from ..worker import try_
 
+# TODO: observer goes brr when the file is changing its size or for exampe rsync is used to move files
+
 class AutomaticDispatcher(FileSystemEventHandler):
     def __init__(self, output, settings, task_queue):
         self.task_queue = task_queue

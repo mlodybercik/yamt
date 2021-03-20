@@ -25,8 +25,8 @@ class Worker(Thread):
 
     @staticmethod
     def get_video_duration(input: Path) -> float:
-        command = "ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "
-        command += str(input)
+        #FIXME: this can fail
+        command = f"ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 '{str(input)}'"
         output = sub_run(better_split(command), capture_output=True, check=True)
         logger.debug((_ := float(output.stdout.decode("ascii")[:-1])))
         return _

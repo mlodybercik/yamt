@@ -8,6 +8,7 @@
 
         {% block styles %}
             {{ bootstrap.load_css() }}
+            <link rel="stylesheet" href="{{ url_for('static', filename='footer.css') }}" type="text/css">
         {% endblock %}
 
         <title>yamt - Yet Another Media Transcoder</title>
@@ -25,8 +26,12 @@
                         <li class="nav-item active">
                             <a class="nav-link" href="{{ url_for('main.index') }}">Home</a>
                         </li>
-                        <li class="nav-item active">
-                            <a class="nav-link" href="{{ url_for('dispatch_job.dispatch') }}">Dispatch</a>
+                        <li class="nav-item dropdown" id="navbarDropdown">
+                            <a class="nav-link dropdown-toggle active" href="#" id="navbarDropdown" role="button" data-toggle="dropdown">Dispatch</a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <a class="dropdown-item" href="{{ url_for('dispatch_job.dispatch') }}">Dispatch</a>
+                                <a class="dropdown-item" href="{{ url_for('dispatch_job.bulk_dispatch') }}">Bulk dispatch</a>
+                            </div>
                         </li>
                         <li class="nav-item active">
                             <a class="nav-link" href="{{ url_for('settings.add_settings') }}">Create settings</a>
@@ -43,7 +48,7 @@
                 </div>
             </nav>
         </header>
-        <main>
+        <main class="pb-5">
             <div class="container h-auto">
                 <div style="position: absolute; transform:translate(-50%, -50%); top: 10%; left:50%;">
                     {{ render_messages(container=False, dismissible=True) }}
@@ -51,8 +56,10 @@
                 {% block content %}{% endblock %}
             </div>
         </main>
-        <footer style="position: fixed; transform:translate(-50%, -50%); bottom: 0%; left:50%; margin: 0" class="text-black-50">
-            &copy; 2021 Przemek 'krzesu0' Barcicki
+        <footer class="footer bg-dark text-muted">
+            <div class="container">
+                <p class="text-right m-0">&copy; 2021 Przemek 'krzesu0' Barcicki</p>
+            </div>
         </footer>
         {{ bootstrap.load_js() }}
         {% block scripts %}{% endblock %}

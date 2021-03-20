@@ -1,0 +1,21 @@
+body {
+    min-height: 100vh;
+    position: relative;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    line-height: 2rem;
+}
+
+.flex-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.item-0 {order:0}
+.item-1 {order:1; flex-grow:1}
+
+.text-monospace {margin:0; padding:0;}

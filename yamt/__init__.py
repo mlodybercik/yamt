@@ -21,7 +21,7 @@ encoding_queue = PeekableQueue()
 message_queue = PeekableQueue()
 
 from .pyffmpeg.worker import Worker
-from .pyffmpeg import TEST
+from .pyffmpeg import TEST, TEST2
 from .pyffmpeg.folder_scanner import FileWatcher
 
 db = SQLAlchemy()

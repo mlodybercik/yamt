@@ -5,7 +5,7 @@
 {% block content %}
     <h1 class="mt-5 mb-2">yamt</h1>
     <div class="col-sm-12 mb-3 px-0">
-        <div class="card">
+        <div class="card shadow-sm">
             <div class="card-body">
                 <h5 class="card-title">Current task:</h5>
                 {{ render_state(worker.state) }}
@@ -34,7 +34,7 @@
     <div class="collapse row" id="collapsable">
         {% for item in worker.queuepeek %}
         <div class="col-sm-6 mb-3">
-            <div class="card">
+            <div class="card shadow-sm">
                 <div class="card-body">
                     <h5 class="card-title">Task {{loop.index}}:</h5>
                     <table class="table table-responsive mb-0">
