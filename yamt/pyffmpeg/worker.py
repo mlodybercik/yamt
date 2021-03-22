@@ -1,9 +1,8 @@
-from subprocess import PIPE, Popen, run as sub_run
-from datetime import timedelta
+from subprocess import DEVNULL, PIPE, Popen, run as sub_run, CalledProcessError
 from threading import Thread
 from pathlib import Path
 from time import time
-from typing import Type
+from typing import Literal, Union
 from . import better_split, logger
 from .type_declarations import State
 from ..queue import PeekableQueue, Empty, try_
@@ -24,12 +23,16 @@ class Worker(Thread):
         super().__init__()
 
     @staticmethod
-    def get_video_duration(input: Path) -> float:
-        #FIXME: this can fail
+    def get_video_duration(input: Path) -> Union[float, Literal[-1]]:
         command = f"ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 '{str(input)}'"
-        output = sub_run(better_split(command), capture_output=True, check=True)
-        logger.debug((_ := float(output.stdout.decode("ascii")[:-1])))
-        return _
+        try:
+            output = sub_run(better_split(command), capture_output=True, check=True)
+            length = float(output.stdout.decode("ascii")[:-1])
+            logger.debug(f"{input} is {length} seconds long.")
+            return length
+        except CalledProcessError:
+            logger.warning(f"Couldn't find the length {input}")
+            return -1
 
     def run(self) -> None:
         signal = None
@@ -60,21 +63,23 @@ class Worker(Thread):
             self.state_flag = State.WORKING
             start_time = time()
             logger.info(f"Got work to do: {self.settings}")
-            self.process = Popen(running_settings, stdout=PIPE, stderr=PIPE, text=True)
+            self.process = Popen(running_settings, stdout=PIPE, stderr=DEVNULL, text=True)
 
             while self.process.poll() is None:
                 # self.process.stdout.readline() is blocking :/
+                # i could spawn subprocesses to watch stderr and stdout *shrug*
+                # TODO???: put stderr into some sort of circular buffer to show it to user
+                # for now, stderr goes brr inside /dev/null
                 temp = ""
                 while (output := self.process.stdout.readline()) and self.process.poll() is None:
-                    # rn im using blocking readline to time rest of the loop
                     if "progress" not in output:
                         temp += output
                         continue
                     else:
                         temp += output
                         self.state = self.update_state(video_duration, start_time, temp)
-                        temp = ""
                     try:
+                        temp = ""
                         signal = try_(self.signal.get, Empty, block=False)
                     except (ValueError, OSError):
                         self.process.kill()
@@ -85,7 +90,10 @@ class Worker(Thread):
 
             self.state_flag = State.WAITING
             logger.info(f"Work done: {self.settings}")
-            logger.info(f"Subprocess exited: {self.process.returncode}")
+            if self.process.returncode:
+                logger.warning(f"Subprocess exited: {self.process.returncode}")
+            else:
+                logger.info(f"Subprocess exited: {self.process.returncode}")
             self.settings = None
             self.state = None
 
@@ -117,7 +125,7 @@ class Worker(Thread):
         except IndexError:
             return None
         
-        percent = time_in_s / video_duration
+        percent = (time_in_s / video_duration) if video_duration >= 0 else 0
         
         try:
             estimated = round(((1 / percent) * timed) - timed)

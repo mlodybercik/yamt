@@ -1,6 +1,7 @@
 from flask import Flask
 from os import urandom
 from flask_bootstrap import Bootstrap
+from flask.helpers import flash
 from flask_sqlalchemy import SQLAlchemy
 
 import logging
@@ -10,7 +11,7 @@ log.setLevel(logging.ERROR)
 
 logging.basicConfig(format="%(asctime)s %(name)-8s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
 
-for logger_ in ["pyffmpeg", "views", "observer"]:
+for logger_ in ["pyffmpeg", "views", "observer", "models"]:
     logging.getLogger(logger_).setLevel(logging.DEBUG)
 
 logger = logging.getLogger(__name__)
@@ -71,3 +72,19 @@ def kill_app():
     watcher.observer.stop()
     message_queue.close()
     encoding_queue.close()
+
+def flash_exception(e: Exception) -> None:
+    from jinja2 import Markup, escape
+    from traceback import format_exception_only
+    formatted_exception = [item.strip() for item in format_exception_only(type(e), e)]
+
+    message = f"""
+    <table class="table-sm">
+        <tbody>
+            {
+                "".join([f'<tr><td>{escape(item)}</td></tr>' for item in formatted_exception])
+            }
+        </tbody>
+    </table>
+    """
+    flash(Markup(message), "error")

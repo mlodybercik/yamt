@@ -1,8 +1,12 @@
+from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 from . import db
+import logging
+
+logger = logging.getLogger("models")
 
 class Settings(db.Model):
     __tablename__ = "settings"
-    local_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    local_id = db.Column(db.Integer, primary_key=True, autoincrement=True, unique=True)
     name = db.Column(db.String(32))
     settings = db.Column(db.PickleType())
     watchers_id = db.Column(db.Integer, db.ForeignKey("watchers.local_id"))
@@ -13,16 +17,25 @@ class Settings(db.Model):
     @staticmethod
     def create_select():
         presets = []
-        for entry in Settings.query.all():
+        for entry in __class__.query.all():
             presets.append((entry.local_id, entry.name))
         return presets
+
+    @staticmethod
+    def get_by_id(id):
+        try:
+            return __class__.query.filter_by(local_id=id).one().settings
+        except MultipleResultsFound:
+            logger.warning(f"Multiple results found in {__class__}")
+        except NoResultFound:
+            return False
 
 class Watchers(db.Model):
     __tablename__ = "watchers"
     settings_id = db.Column(db.Integer, db.ForeignKey("settings.local_id"), nullable=False)
     settings = db.relationship(Settings, foreign_keys=settings_id, backref="watchers")
 
-    local_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    local_id = db.Column(db.Integer, primary_key=True, autoincrement=True, unique=True)
     enabled = db.Column(db.Boolean, default=True)
     name = db.Column(db.String(32))
     input_path = db.Column(db.String(32))

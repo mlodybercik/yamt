@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+from typing import Union
 from wtforms.validators import ValidationError as wtfValidationError
 from wtforms.fields import Field
 from wtforms.widgets import TextInput
@@ -20,6 +22,10 @@ class PathField(Field):
         else:
             self.data = None
 
+@dataclass
+class DummyData:
+    data: Union[str, Path]
+
 def positive_or_one(form, field):
     if field.data is not None:
         if field.data != -1 and field.data <= 0:
@@ -40,7 +46,7 @@ def bulk_path_validate(data, abs=True):
         elif e.reason == ErrorReason.MALFORMED_ABS_PATH and abs:
             raise wtfValidationError("Malformed absolute path.")
 
-def path_to_file(form, field):
+def _path_to_file(form, field):
     try:
         file_path = Path(field.data)
         if not file_path.exists() or file_path.is_dir():
@@ -49,7 +55,14 @@ def path_to_file(form, field):
         raise wtfValidationError("File doesnt exist.")
     bulk_path_validate(file_path, False)
 
-def path_to_dir(form, field):
+def path_to_file_is_valid(path: Union[str, Path]) -> bool:
+    try:
+        _path_to_file(None, DummyData(path))
+        return True
+    except wtfValidationError:
+        return False
+
+def _path_to_dir(form, field):
     try:
         dir_path = Path(field.data)
         if not dir_path.exists() or not dir_path.is_dir():
@@ -58,7 +71,14 @@ def path_to_dir(form, field):
         raise wtfValidationError("Path doesnt exist.")
     bulk_path_validate(dir_path)
 
-def path_to_new_file(form, field):
+def path_to_dir_is_valid(path: Union[str, Path]) -> bool:
+    try:
+        _path_to_dir(None, DummyData(path))
+        return True
+    except wtfValidationError:
+        return False
+
+def _path_to_new_file(form, field):
     try:
         dir_path = Path(field.data)
         if not dir_path.parent.exists():
@@ -66,3 +86,10 @@ def path_to_new_file(form, field):
     except TypeError:
         raise wtfValidationError("Path doesnt exist.")
     bulk_path_validate(dir_path, False)
+
+def path_to_new_file_is_valid(path: Union[str, Path]) -> bool:
+    try:
+        _path_to_new_file(None, DummyData(path))
+        return True
+    except wtfValidationError:
+        return False

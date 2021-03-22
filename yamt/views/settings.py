@@ -1,10 +1,9 @@
 from flask import Blueprint, render_template, request, flash
-from traceback import format_exception
 from ..forms.create_settings import CreateSettings
 from ..pyffmpeg.type_declarations import SETTINGS
 from ..pyffmpeg import ffmpegSettings
 from ..models import Settings
-from .. import db
+from .. import db, flash_exception
 
 settings_view = Blueprint("settings", __name__, template_folder="templates")
 
@@ -22,7 +21,7 @@ def add_settings():
             form_data = {x:form_data[x] for x in form_data if x in SETTINGS}
             settings = ffmpegSettings.init_from_unsure(**form_data)
         except Exception as e:
-            flash(f"{''.join(format_exception(type(e), e, e.__traceback__))}", "error")
+            flash_exception(e)
             return render_template("settings.html", form=form)
         new_settings = Settings(name=name, settings=settings)
         db.session.add(new_settings)

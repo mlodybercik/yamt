@@ -42,7 +42,23 @@ function spawn_form() {
     return tr
 }
 
-const entries = []
+let entries = []
+
+function mark_and_remove(id_list, class_name = "table-danger") {
+    [...Array(entries.length).keys()].forEach(item => {
+        if(id_list.indexOf(item) + 1) {
+            entries[item].classList.add(class_name)
+            entries[item].classList.add("table-warning")
+        } else {
+            entries[item].remove()
+        };
+    })
+    entries = entries.filter((_, index) => {
+        return index in id_list
+    })
+}
+
+// FIXME: this doesnt work lol
 
 b_add.onclick = function () {
     new_row = spawn_form()
@@ -59,6 +75,9 @@ b_run.onclick = function () {
     if(entries.length) {
         let objs = []
         entries.forEach(job => {
+            if([...job.classList].indexOf("table-danger") + 1) {
+                job.classList.remove("table-danger")
+            }
             let x = {
                 "input": job.querySelector("input[input]").value,
                 "output": job.querySelector("input[output]").value,
@@ -72,11 +91,29 @@ b_run.onclick = function () {
          body: JSON.stringify(objs)})
         .then(response => {
             if(response.ok) {
-                console.log("ok")
+                response.json().then(json => {
+                    console.log(json)
+                    if("info" in json) {
+                        mark_and_remove(json["info"])
+                    } else {
+                        entries.forEach((item) => {
+                            item.remove()
+                        })
+                        entries = []
+                    }
+                })
             }
         })
         .catch(error => {
             console.log(error)
         })
     }
+}
+
+b_run.onmouseover = function () {
+    entries.forEach(job => {
+        if([...job.classList].indexOf("table-danger") + 1) {
+            job.classList.remove("table-danger")
+        }
+    });
 }

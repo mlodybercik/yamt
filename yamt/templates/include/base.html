@@ -50,7 +50,7 @@
         </header>
         <main class="pb-5">
             <div class="container h-auto">
-                <div style="position: absolute; transform:translate(-50%, -50%); top: 10%; left:50%;">
+                <div style="position: absolute; transform:translateX(-50%); top: 10%; left:50%; z-index: 1000;">
                     {{ render_messages(container=False, dismissible=True) }}
                 </div>
                 {% block content %}{% endblock %}

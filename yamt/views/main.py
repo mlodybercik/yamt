@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, redirect
-from .. import worker, watcher, kill_app, TEST, TEST2
+from .. import worker, watcher, kill_app, TEST, TEST2, flash_exception
 from . import logger
 
 main_view = Blueprint("main", __name__, template_folder="templates")
@@ -34,4 +34,12 @@ def test_asd():
     class Watcher:
         state_flag = "chuj ci na łeb"
 
+    def x():
+        x()
+
+    try:
+        x()
+    except RecursionError as x:
+        flash_exception(x)
+    
     return render_template("test.html", worker=Worker(), watcher=Watcher())
