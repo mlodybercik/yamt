@@ -27,7 +27,7 @@ class FileWatcher:
             watcher = self.observer.schedule(AutomaticDispatcher(output_path, settings, self.task_queue), input_path, False)
             self._scheduled_tasks[id] = watcher
         else:
-            logger.debug("Observer dead, creating new one:")
+            logger.debug("Observer dead, creating new one...")
             self.observer = QueueInotifyObserver(self.signal)
             self.start()
             watcher = self.observer.schedule(AutomaticDispatcher(output_path, settings, self.task_queue), input_path, False)

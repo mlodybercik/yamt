@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template, redirect
-from .. import worker, watcher, kill_app, TEST, TEST2, flash_exception
 from . import logger
+from ..pyffmpeg import Path, Size, ffmpegFullSettings, ffmpegSettings
+from .. import worker, watcher, kill_app, flash_exception
+
 
 main_view = Blueprint("main", __name__, template_folder="templates")
 
@@ -22,8 +24,14 @@ def kill():
     kill_app()
     return redirect("/")
 
+
+# Website testing purposes
 @main_view.route("/test")
 def test_asd():
+
+    TEST  = ffmpegSettings(widthxheight=Size(1280, 720), v_encoder="x264")
+    TEST2 = ffmpegFullSettings(settings=TEST, input=Path("london.mp4"), output=Path("london.m4v"))
+
     class Worker:
         settings_input = "/smb/xD/a co cie to/mov.mp4"
         settings_output = "/smb/xD/inna ścieżka/mov.m4v"

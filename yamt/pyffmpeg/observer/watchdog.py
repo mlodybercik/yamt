@@ -24,7 +24,7 @@ class AutomaticDispatcher(FileSystemEventHandler):
             if is_video(event.src_path) and path.is_file():
                 output_file = path.name
                 if len(output_file.split(".")) >= 2:
-                    full_settings = ffmpegFullSettings.from_settings(
+                    full_settings = ffmpegFullSettings(
                         input=path,
                         output=self.output / output_file,
                         settings=self.settings)
@@ -32,7 +32,7 @@ class AutomaticDispatcher(FileSystemEventHandler):
                     try:
                         self.task_queue.put(full_settings)
                     except ValueError:
-                        logger.warning("Tried to put work in closed queue.")
+                        logger.warning("Tried to put work in closed queue")
 
 class ControlQueueObserver(InotifyEmitter):
         def __init__(self, message_queue, *args, **kwargs):
@@ -74,6 +74,6 @@ class QueueBaseObserver(BaseObserver):
 
 class QueueInotifyObserver(QueueBaseObserver):
     def __init__(self, queue, timeout=DEFAULT_OBSERVER_TIMEOUT):
-        logger.debug("Starting filewatcher.")
+        logger.debug("Starting filewatcher")
         QueueBaseObserver.__init__(self, emitter_class=ControlQueueObserver, timeout=timeout, message_queue=queue)
         

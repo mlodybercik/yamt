@@ -7,7 +7,7 @@ var command_string = ""
 
 function change_text() {
     console.log(1)
-    command.value = "ffmpeg -i " + input.value + " -o " + output.value + " " + command_string
+    command.value = "ffmpeg -i '" + input.value + "' " + command_string + " '" + output.value + "'" 
 }
 
 async function fetch_settings(id, command) {

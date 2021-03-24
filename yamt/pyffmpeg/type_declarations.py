@@ -44,9 +44,10 @@ A_ENCODERS = {
 
 SETTINGS = {
     # TODO: add more settings
-    "input": "-i",
-    "output": "",
+    # SPECIAL
     "preset": "",
+    "widthxheight": "", # idk but maybe FIXME?
+    # 
     "framerate": "-r",
     "quality": "-crf",
     "web_optimise": "-movflags +faststart",
@@ -87,7 +88,7 @@ class Size:
         if self.width == -1 and self.height == -1:
             return ""
         else:
-            return f"-filter:v {self.width}:{self.height}"
+            return f"-filter:v scale={self.width}:{self.height}"
 
 @dataclass
 class PositiveInteger:

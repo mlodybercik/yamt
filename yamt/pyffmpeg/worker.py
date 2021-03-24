@@ -19,7 +19,7 @@ class Worker(Thread):
     def __init__(self, queue: PeekableQueue, signal: PeekableQueue) -> None:
         self.queue = queue
         self.signal = signal
-        logger.debug("Creating worker thread:")
+        logger.debug("Creating worker thread...")
         super().__init__()
 
     @staticmethod
@@ -28,7 +28,7 @@ class Worker(Thread):
         try:
             output = sub_run(better_split(command), capture_output=True, check=True)
             length = float(output.stdout.decode("ascii")[:-1])
-            logger.debug(f"{input} is {length} seconds long.")
+            logger.debug(f"{input} is {length} seconds long")
             return length
         except CalledProcessError:
             logger.warning(f"Couldn't find the length {input}")
@@ -36,7 +36,7 @@ class Worker(Thread):
 
     def run(self) -> None:
         signal = None
-        logger.info("Worker started, waiting for inputs:")
+        logger.info("Worker started, waiting for inputs...")
         self.state_flag = State.WAITING
         while True:
             while True:

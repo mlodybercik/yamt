@@ -9,6 +9,7 @@ watch = Blueprint("watch", __name__, template_folder="templates")
 
 @watch.route("/add_watcher", methods=["POST", "GET"])
 def add_watcher():
+    #TODO: add remove_watcher
     form = CreateFileWatch(meta={"csrf": False})
     form.preset_name.choices = Settings.create_select()
     watchers = Watchers.create_select()
@@ -17,8 +18,9 @@ def add_watcher():
         db.session.add(new)
         db.session.commit()
         flash("Succesfully created new watcher.")
-        logger.debug(f"Added {new} to watchers.")
+        logger.debug(f"Added {new} to watchers")
         try:
+            #TODO: input, output, id should be unique
             watcher.schedule_new(new.local_id, new.input_path, new.output_path, new.settings)
         finally:
             return render_template("watcher.html", form=form, watchers=watchers)

@@ -24,13 +24,13 @@ def dispatch_backend(preset_id: int, input: Path, output: Path):
 
         if path_to_new_file_is_valid(output):
             if (settings := Settings.get_by_id(preset_id)):
-                full_settings = ffmpegFullSettings.from_settings(input=input, output=output, settings=settings)
+                full_settings = ffmpegFullSettings(input=input, output=output, settings=settings)
                 try:
                     worker.queue.put(full_settings)
-                    logger.debug(f"Adding {str(full_settings)} to queue.")
+                    logger.debug(f"Adding {str(full_settings)} to queue")
                     return True
                 except ValueError:
-                    logger.warning("Tried to dispatch work to empty queue.")
+                    logger.warning("Tried to dispatch work to empty queue")
     return False
 
 

@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, request, flash
 from ..forms.create_settings import CreateSettings
-from ..pyffmpeg.type_declarations import SETTINGS
 from ..pyffmpeg import ffmpegSettings
 from ..models import Settings
 from .. import db, flash_exception
@@ -18,7 +17,6 @@ def add_settings():
                     continue
                 form_data[key] = value
             name = form_data["preset_name"]
-            form_data = {x:form_data[x] for x in form_data if x in SETTINGS}
             settings = ffmpegSettings.init_from_unsure(**form_data)
         except Exception as e:
             flash_exception(e)
@@ -39,4 +37,4 @@ def render_settings():
         id = int(request.form["id"])
     except (ValueError, KeyError):
         return ""
-    return str(Settings.query.filter_by(local_id=id).first().settings)
+    return str(Settings.get_by_id(id))
