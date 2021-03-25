@@ -46,8 +46,12 @@ class Watchers(db.Model):
 
     @staticmethod
     def parse_from_form(form):
-        return __class__(settings_id=form["preset_name"], name=form["name"], \
-                        input_path=str(form["input_path"]), output_path=str(form["output_path"]))
+        try:
+            new = __class__(settings_id=form["preset_name"], name=form["name"], \
+                            input_path=str(form["input_path"]), output_path=str(form["output_path"]))
+        except KeyError:
+            return False
+        return new
 
     @staticmethod
     def create_select():
@@ -57,6 +61,15 @@ class Watchers(db.Model):
                                        entry.input_path, entry.output_path, \
                                        entry.enabled)
         return presets
+
+    @staticmethod
+    def get_by_id(id):
+        try:
+            return __class__.query.filter_by(local_id=id).one()
+        except MultipleResultsFound:
+            logger.warning(f"Multiple results found in {__class__}")
+        except NoResultFound:
+            return False
 
     @staticmethod
     def register_all_watchers(watcher):

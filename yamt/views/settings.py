@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash
+from flask import Blueprint, render_template, request, flash, redirect
 from ..forms.create_settings import CreateSettings
 from ..pyffmpeg import ffmpegSettings
 from ..models import Settings
@@ -20,13 +20,13 @@ def add_settings():
             settings = ffmpegSettings.init_from_unsure(**form_data)
         except Exception as e:
             flash_exception(e)
-            return render_template("settings.html", form=form)
+            return redirect(request.path)
         new_settings = Settings(name=name, settings=settings)
         db.session.add(new_settings)
         db.session.commit()
 
         flash("Succesfully added new preset.")
-        return render_template("settings.html", form=form)
+        return redirect(request.path)
 
     else:
         return render_template("settings.html", form=form)

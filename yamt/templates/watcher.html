@@ -11,26 +11,30 @@
     <p>
         {% if watchers %}
             <div class="table-responsive">
-                <table class="table">
+                <table class="table" id="table">
                     <thead>
-                        <th scope="col">Name:</th>
-                        <th scope="col">Preset:</th>
-                        <th scope="col">Input path:</th>
-                        <th scope="col">Output path:</th>
-                        <th scope="col">Running?</th>
+                        <tr>
+                            <th scope="col">Name:</th>
+                            <th scope="col">Preset:</th>
+                            <th scope="col">Input path:</th>
+                            <th scope="col">Output path:</th>
+                            <th scope="col">Running?</th>
+                            <th scope="col" style="width:1%"></th>
+                        </tr>
                     </thead>
                     <tbody>
                         {% for id, values in watchers.items() %}
-                            <tr class="text-monospace">
+                            <tr class="text-monospace" id="{{ id }}">
                                 <td scope="row">{{ values[0] }} </td>
                                 <td>{{ values[1] }}</td>
                                 <td>{{ values[2] }}</td>
                                 <td>{{ values[3] }}</td>
                                 {% if values[4] %}
-                                    <td id="{{ id }}"><input type="checkbox" class="running" value="{{ id }}" checked><span class="text-success"> Yes!</span></td>
+                                    <td><input type="checkbox" class="running" value="{{ id }}" checked><span class="text-success"> Yes!</span></td>
                                 {% else %}
-                                    <td id="{{ id }}"><input type="checkbox" class="running" value="{{ id }}"><span class="text-danger"> No!</span></td>
+                                    <td><input type="checkbox" class="running" value="{{ id }}"><span class="text-danger"> No!</span></td>
                                 {% endif %}
+                                <td><button type="button" class="btn btn-outline-danger btn-sm delete">Delete</button></td>
                             </tr>
                         {% endfor %}
                     </tbody>

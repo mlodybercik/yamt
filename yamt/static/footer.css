@@ -19,3 +19,5 @@ body {
 .item-1 {order:1; flex-grow:1}
 
 .text-monospace {margin:0; padding:0;}
+
+.table td {vertical-align: middle;}
