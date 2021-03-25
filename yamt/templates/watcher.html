@@ -5,7 +5,7 @@
     <h1 class="mt-5">Create filesystem watcher!</h1>
     <form method="POST">
         {{ render_form_row([form.preset_name, form.name]) }}
-        {{ render_form_row([form.input_path, form.output_path]) }}
+        {{ render_form_row([form.input, form.output]) }}
         <input type="submit" class="btn btn-info" value="Create">
     </form>
     <p>

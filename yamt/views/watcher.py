@@ -19,7 +19,7 @@ def add_watcher():
         if(new := Watchers.parse_from_form(form.data)):
             db.session.add(new)
             db.session.commit()
-            if watcher.schedule_new(new.local_id, new.input_path, new.output_path, new.settings):
+            if watcher.schedule_new(new.local_id, new.input, new.output, new.settings):
                 logger.debug(f"Added {new} to watchers")
 
                 flash("Succesfully created new watcher.")
@@ -63,8 +63,8 @@ def update_watcher():
                 
         elif not watcher_query.enabled and checked:
             # 4
-            watcher.schedule_new(watcher_query.local_id, watcher_query.input_path, \
-                                 watcher_query.output_path, watcher_query.settings.settings)
+            watcher.schedule_new(watcher_query.local_id, watcher_query.input, \
+                                 watcher_query.output, watcher_query.settings.settings)
             watcher_query.enabled = True
             db.session.commit()
 

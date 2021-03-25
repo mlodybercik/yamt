@@ -11,16 +11,17 @@ from pathvalidate.error import ErrorReason
 class PathField(Field):
     widget = TextInput()
     def _value(self):
-        if self.data:
-            return str(Path(self.data))
-        else:
-            return ""
+        return self.data if self.data else ""
 
     def process_formdata(self, valuelist):
         if valuelist:
-            self.data = Path(valuelist[0])
+            self.data = Path(valuelist[0]).resolve()
         else:
             self.data = None
+
+def input_is_not_output(form, field):
+    if form.input.data.resolve() == form.output.data.resolve():
+        raise wtfValidationError("Input cant be the same as output!")
 
 @dataclass
 class DummyData:

@@ -1,5 +1,6 @@
 from wtforms.fields.simple import SubmitField
-from yamt.pyffmpeg.type_abbreviation import generate_choices_framerate, generate_choices_v_encoders, generate_choices_a_encoders, generate_choices_presets
+from yamt.pyffmpeg.type_abbreviation import generate_choices_framerate, generate_choices_v_encoders,\
+                                            generate_choices_a_encoders, generate_choices_presets
 from flask_wtf import FlaskForm
 from wtforms import StringField
 from wtforms.fields.core import BooleanField, FloatField, IntegerField, SelectField

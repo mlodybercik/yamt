@@ -38,17 +38,17 @@ class Watchers(db.Model):
     local_id = db.Column(db.Integer, primary_key=True, autoincrement=True, unique=True)
     enabled = db.Column(db.Boolean, default=True)
     name = db.Column(db.String(32))
-    input_path = db.Column(db.String(32))
-    output_path = db.Column(db.String(32))
+    input = db.Column(db.String(32))
+    output = db.Column(db.String(32))
 
     def __repr__(self):
-        return f"<id={self.local_id} name={self.name} input={self.input_path}, output={self.output_path}>"
+        return f"<id={self.local_id} name={self.name} input={self.input}, output={self.output}>"
 
     @staticmethod
     def parse_from_form(form):
         try:
             new = __class__(settings_id=form["preset_name"], name=form["name"], \
-                            input_path=str(form["input_path"]), output_path=str(form["output_path"]))
+                            input=str(form["input"]), output=str(form["output"]))
         except KeyError:
             return False
         return new
@@ -58,7 +58,7 @@ class Watchers(db.Model):
         presets = {}
         for entry in __class__.query.all():
             presets[entry.local_id] = (entry.name, entry.settings.name, \
-                                       entry.input_path, entry.output_path, \
+                                       entry.input, entry.output, \
                                        entry.enabled)
         return presets
 
@@ -75,5 +75,5 @@ class Watchers(db.Model):
     def register_all_watchers(watcher):
         for entry in __class__.query.all():
             if entry.enabled:
-                watcher.schedule_new(entry.local_id, entry.input_path, entry.output_path, entry.settings.settings)
+                watcher.schedule_new(entry.local_id, entry.input, entry.output, entry.settings.settings)
     
