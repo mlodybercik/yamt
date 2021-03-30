@@ -1,67 +1,92 @@
 {% extends "include/base.html" %}
-{% from "include/macro.html" import render_state with context %}
+{% from "include/macro.html" import render_bar with context %}
 
+{% block pre_container %}
+<div class="jumbotron jumbotron-fluid">
+    <div class="container">
+        <h1 class="display-4">yamt</h1>
+        <div class="row">
+            <div class="col-sm-12 mb-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Current task:</h5>
+                        {{ render_bar(worker.state["percent"]) }}
+                        <div class="table-responsive">
+                            <table class="table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Input:</th>
+                                        <th>Output:</th>
+                                        <th>Time remaining:</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="text-monospace" scope="row">{{ worker.settings_input }}</td>
+                                        <td class="text-monospace">{{ worker.settings_output }}</td>
+                                        <td class="text-monospace">00:32:14</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
 
 {% block content %}
-    <h1 class="mt-5 mb-2">yamt</h1>
-    <div class="col-sm-12 mb-3 px-0">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">Current task:</h5>
-                {{ render_state(worker.state) }}
-                <div class="table-responsive">
-                    <table class="table mb-0">
-                        <thead>
-                            <tr>
-                                <th>Input:</th>
-                                <th>Output:</th>
-                                <th>Time remaining:</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="text-monospace" scope="row">{{ worker.settings_input }}</td>
-                                <td class="text-monospace">{{ worker.settings_output }}</td>
-                                <td class="text-monospace">00:32:14</td>
-                            </tr>
-                        </tbody>
-                    </table>
+    {% if worker.queuepeek %}
+    <div class="collapse show" id="collapsable">
+        <h4>Tasks waiting in queue:</h4>
+        <div class="row">
+        {% for item in worker.queuepeek %}
+            <div class="col-sm-6 mb-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Task {{loop.index}}:</h5>
+                        <table class="table table-responsive mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Input:</th>
+                                    <th>Output:</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-monospace" scope="row">{{ worker.settings_input }}</td>
+                                    <td class="text-monospace">{{ worker.settings_output }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+        <div class="row">
+            <div class="col-sm-6 mb-3">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <p>Worker:<span class="text-monospace"> ✔</span></p>
+                        <p>Watcher:<span class="text-monospace"> ✔</span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 mb-3">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="card-title pr-5">CPU usage:</h6>
+                        {% for usage in [93, 45, 23, 64] %}
+                            <div class="py-2">{{ render_bar(usage) }}</div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     <a class="btn btn-primary mb-3" data-toggle="collapse" href="#collapsable" role="button" aria-expanded="false" aria-controls="collapsable">Show pending tasks</a>
-    <div class="collapse row" id="collapsable">
-        {% for item in worker.queuepeek %}
-        <div class="col-sm-6 mb-3">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Task {{loop.index}}:</h5>
-                    <table class="table table-responsive mb-0">
-                        <thead>
-                            <tr>
-                                <th>Input:</th>
-                                <th>Output:</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="text-monospace" scope="row">{{ worker.settings_input }}</td>
-                                <td class="text-monospace">{{ worker.settings_output }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-        <div class="col-sm-6 mb-3">
-            <p class="text-monospace">Worker: {{ worker.state_flag }}</p>
-            <p class="text-monospace">Watcher: {{ watcher.state_flag }}</p>
-        </div>
-    </div>
-
-
-
-
+    {% endif %}
 {% endblock %}

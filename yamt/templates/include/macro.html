@@ -1,6 +1,7 @@
-{% macro render_state(state) %}
+<!-- TODO: add color to bars-->
+{% macro render_bar(percent) %}
     <div class="progress">    
-        <div class="progress-bar" role="progressbar" style="width: {{ state['percent'] }}%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{ state['percent'] }}%</div>
+        <div class="progress-bar" role="progressbar" style="width: {{ percent }}%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{ percent }}%</div>
     </div>
 {% endmacro %}
 

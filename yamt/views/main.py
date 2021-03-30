@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, redirect
-from . import logger
+from . import logger, get_info
 from ..pyffmpeg import Path, Size, ffmpegFullSettings, ffmpegSettings
 from .. import worker, watcher, kill_app, flash_exception
 
@@ -17,7 +17,8 @@ def index():
         worker_queue = worker.queue.peek()
     except ValueError:
         worker_queue = []
-    return render_template("main.html", worker=worker, watcher=watcher, worker_queue=worker_queue)
+    info = get_info()
+    return render_template("main.html", worker=worker, watcher=watcher, worker_queue=worker_queue, info=info)
 
 @main_view.route("/kill")
 def kill():

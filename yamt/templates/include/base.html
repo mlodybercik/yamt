@@ -49,6 +49,7 @@
             </nav>
         </header>
         <main class="pb-5">
+            {% block pre_container %}{% endblock %}
             <div class="container h-auto">
                 <div style="position: absolute; transform:translateX(-50%); top: 10%; left:50%; z-index: 1000;">
                     {{ render_messages(container=False, dismissible=True) }}
