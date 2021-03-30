@@ -15,6 +15,7 @@ class Worker(Thread):
     queue = None
     signal = None
     settings = None
+    current_task_no = 0
 
     def __init__(self, queue: PeekableQueue, signal: PeekableQueue) -> None:
         self.queue = queue
@@ -94,6 +95,7 @@ class Worker(Thread):
                 logger.warning(f"Subprocess exited: {self.process.returncode}")
             else:
                 logger.info(f"Subprocess exited: {self.process.returncode}")
+            self.current_task_no += 1
             self.settings = None
             self.state = None
 
@@ -136,6 +138,7 @@ class Worker(Thread):
             estimated = None
 
         return {"current_frame": current_frame,
+                "current_task": self.current_task_no,
                 "fps": fps,
                 "time_in_s": time_in_s,
                 "conversion_speed": conversion_speed,

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect
+from flask import Blueprint, render_template, redirect, request, jsonify
 from . import logger, get_info
 from ..pyffmpeg import Path, Size, ffmpegFullSettings, ffmpegSettings
 from .. import worker, watcher, kill_app, flash_exception
@@ -24,6 +24,15 @@ def index():
 def kill():
     kill_app()
     return redirect("/")
+
+@main_view.route("/get_update")
+def get_update():
+    data = {
+        "curr_task": worker.state,
+        "states": [str(worker.state_flag), str(watcher.state_flag)],
+        "cpu": get_info(),
+    }
+    return data
 
 
 # Website testing purposes

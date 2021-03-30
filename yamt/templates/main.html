@@ -27,9 +27,9 @@
                                                 <td class="text-monospace" scope="row">{{ worker.settings.input.resolve() }}</td>
                                                 <td class="text-monospace">{{ worker.settings.output.resolve() }}</td>
                                                 {% if not worker.state["estimated"] %}
-                                                    <td class="text-monospace">Waiting for status...</td>
+                                                    <td class="text-monospace" id="time-remaining">Waiting for status...</td>
                                                 {% else %}
-                                                    <td class="text-monospace">{{ worker.state["estimated"] }}</td>
+                                                    <td class="text-monospace" id="time-remaining">{{ worker.state["estimated"] }}</td>
                                                 {% endif %}
                                             </tr>
                                         </tbody>
@@ -80,15 +80,15 @@
             <div class="col-sm-6 mb-3">
                 <div class="card shadow-sm h-100">
                     <div class="card-body">
-                        <p>Worker:<span class="text-monospace"> {{ worker.state_flag }}</span></p>
-                        <p>Watcher:<span class="text-monospace"> {{ watcher.state_flag }}</span></p>
+                        <p>Worker:<span class="text-monospace" id="worker"> {{ worker.state_flag }}</span></p>
+                        <p>Watcher:<span class="text-monospace" id="watcher"> {{ watcher.state_flag }}</span></p>
                     </div>
                 </div>
             </div>
             <div class="col-sm-6 mb-3">
                 <div class="card shadow-sm h-100">
-                    <div class="card-body">
-                        <h6 class="card-title pr-5">CPU usage: {{ ", ".join(info["cpu_avg"]) }}</h6>
+                    <div class="card-body" id="cpu_card">
+                        <h6 class="card-title pr-5">CPU usage: <span id="cpu_avg">{{ ", ".join(info["cpu_avg"]) }}</span></h6>
                         {% for usage in info["cpu_usage"] %}
                             <div class="py-2">{{ render_bar(usage) }}</div>
                         {% endfor %}
@@ -100,4 +100,8 @@
     {% if worker_queue%}
     <a class="btn btn-primary mb-3" data-toggle="collapse" href="#collapsable" role="button" aria-expanded="false" aria-controls="collapsable">Show pending tasks</a>
     {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script async src="{{ url_for('static', filename='main.js') }}"></script>
 {% endblock %}
