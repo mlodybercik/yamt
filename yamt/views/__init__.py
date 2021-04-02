@@ -6,7 +6,7 @@ import psutil
 def get_info():
     return {
     "cpu_usage": psutil.cpu_percent(percpu=True),
-    "cpu_avg": [str(round(x / psutil.cpu_count() * 100, 2)) for x in psutil.getloadavg()],
+    "cpu_avg": [str(round(x, 2)) for x in psutil.getloadavg()],
     "v_mem": psutil.virtual_memory(),
     }
 

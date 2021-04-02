@@ -1,5 +1,6 @@
 const cpu_avg = document.getElementById("cpu_avg")
 const cpu_bars = [...document.getElementById("cpu_card").getElementsByClassName("progress-bar")]
+const main_bar = document.getElementById("main-progress").getElementsByClassName("progress-bar")[0]
 const worker = document.getElementById("worker")
 const watcher = document.getElementById("watcher")
 const time_remaining = document.getElementById("time-remaining")    
@@ -36,9 +37,11 @@ function reload(request) {
                 last_seen_task = request["curr_task"]["current_task"]
             } else if(last_seen_task != request["curr_task"]["current_task"]) {
                 location.reload()
+                return true
             }
         } else if(typeof last_seen_task == "number") {
             location.reload()
+            return true
         } else {
             last_seen_task = undefined
         }
@@ -51,11 +54,16 @@ function update_state(worandwat) {
 }
 
 function update_site_state(request) {
-    reload(request)
+    if(reload(request))
+        return
     update_avg(request["cpu"]["cpu_avg"])
     for(let i = 0; i<cpu_bars.length; i++) {
         update_bar(cpu_bars[i], request["cpu"]["cpu_usage"][i])
     }
+    if("curr_task" in request)
+        if(request["curr_task"]) {
+            update_bar(main_bar, request["curr_task"]["percent"])
+        }
     update_state(request["states"])
     update_time(request)
 }
