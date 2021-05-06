@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, redirect, request, jsonify
 from . import logger, get_info
 from ..pyffmpeg import Path, Size, ffmpegFullSettings, ffmpegSettings
-from .. import worker, watcher, kill_app, flash_exception
+from ..pyffmpeg.ffmpeg_type.type_declarations import Signal
+from .. import worker, watcher, kill_app, flash_exception, message_queue
 
 
 main_view = Blueprint("main", __name__, template_folder="templates")
@@ -12,7 +13,6 @@ def hello():
 
 @main_view.route("/")
 def index():
-    # TODO: implement removing job from queue
     try:
         worker_queue = worker.queue.peek()
     except ValueError:
@@ -34,13 +34,22 @@ def get_update():
     }
     return data
 
+@main_view.route("/pause", methods=["POST"])
+def pause():
+    message_queue.put(Signal.PAUSE)
+    return "ok"
+
+@main_view.route("/stop", methods=["POST"])
+def stop():
+    message_queue.put(Signal.STOP)
+    return "ok"
+
+TEST  = ffmpegSettings(widthxheight=Size(1280, 720), v_encoder="x264")
+TEST2 = ffmpegFullSettings(settings=TEST, input=Path("london.mp4"), output=Path("london.m4v"))
 
 # Website testing purposes
 @main_view.route("/test")
 def test_asd():
-
-    TEST  = ffmpegSettings(widthxheight=Size(1280, 720), v_encoder="x264")
-    TEST2 = ffmpegFullSettings(settings=TEST, input=Path("london.mp4"), output=Path("london.m4v"))
 
     class Worker:
         settings_input = "/smb/xD/a co cie to/mov.mp4"

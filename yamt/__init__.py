@@ -11,7 +11,7 @@ log.setLevel(logging.ERROR)
 logging.basicConfig(format="%(asctime)s %(name)-8s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
 
 for logger_ in ["pyffmpeg", "views", "observer", "models"]:
-    logging.getLogger(logger_).setLevel(logging.DEBUG)
+    logging.getLogger(logger_).setLevel(logging.INFO)
 
 logger = logging.getLogger(__name__)
 

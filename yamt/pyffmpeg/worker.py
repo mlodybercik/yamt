@@ -1,22 +1,28 @@
-from subprocess import DEVNULL, PIPE, Popen, run as sub_run, CalledProcessError
+from subprocess import PIPE, Popen, run as sub_run, CalledProcessError
 from threading import Thread
 from pathlib import Path
 from time import time
 from typing import List, Literal, Union
 from . import better_split, logger
-from .ffmpeg_type.type_declarations import State
+from .ffmpeg_type.type_declarations import Signal, State
 from ..queue import PeekableQueue, Empty, try_
-from.stdqueue import OutWatcher, find_progress
+from . import ffmpegFullSettings
+from .stdqueue import OutWatcher, find_progress
+import signal as sys_signal
+
 
 class Worker(Thread):
-    process = None
-    state_flag = State.UNKNOWN
-    state = None
-    should_exit = False
-    queue = None
-    signal = None
-    settings = None
-    current_task_no = 0
+    process: Popen = None
+    state_flag: State = State.UNKNOWN
+    state: dict = None
+    should_exit: bool = False
+    queue: PeekableQueue = None
+    signal: PeekableQueue = None
+    settings: ffmpegFullSettings = None
+    paused: bool = False
+    paused_for: float = 0.0
+    paused_at: float = 0.0
+    current_task_no: int = 0
 
     def __init__(self, queue: PeekableQueue, signal: PeekableQueue) -> None:
         self.queue = queue
@@ -40,7 +46,9 @@ class Worker(Thread):
         signal = None
         logger.info("Worker started, waiting for inputs...")
         self.state_flag = State.WAITING
-        while True:
+        # runner loop
+        while not self.should_exit:
+            # w8 loop
             while True:
                 try:
                     self.settings = try_(self.queue.get, Empty, timeout=1)
@@ -49,15 +57,15 @@ class Worker(Thread):
                     self.should_exit = True
                     break
 
-                if self.should_exit or self.settings or signal:
+                if signal:
+                    self.handle_signal(signal)
+                
+                if self.should_exit or self.settings:
                     break
             
-            if signal:
-                self.handle_signal(signal)
+
             if self.should_exit:
                 break
-
-            assert self.settings != None, "Settings are None???"
             
             video_duration = self.get_video_duration(self.settings.input)
 
@@ -65,13 +73,13 @@ class Worker(Thread):
             self.state_flag = State.WORKING
             start_time = time()
 
-            logger.info(f"Got work to do: {self.settings}")
+            logger.debug(f"Got work to do: {self.settings}")
             self.process = Popen(running_settings, stdout=PIPE, stderr=PIPE, text=True)
 
-            logger.info(f"Created stderr and stdout watchers")
             err, out = OutWatcher(self.process.stderr, 100), OutWatcher(self.process.stdout, 100)
             err.start()
             out.start()
+            logger.info(f"Created stderr and stdout watchers")
 
             while self.process.poll() is None:
                 # first comes the check for signals.
@@ -85,6 +93,9 @@ class Worker(Thread):
                     err.has_to_stop = True
                     out.has_to_stop = True
                     break
+                
+                if signal:
+                    self.handle_signal(signal)
 
                 with out.lock:
                     if (loc := out.buffer.find_and_return_slice(find_progress)):
@@ -106,6 +117,8 @@ class Worker(Thread):
             self.current_task_no += 1
             self.settings = None
             self.state = None
+            self.paused_at = 0
+            self.paused_for = 0
 
         self.state_flag = State.DEAD
         logger.debug("Worker dead")
@@ -124,8 +137,11 @@ class Worker(Thread):
         # drop_frames=0               # 
         # speed=   0x                 # float     conversion speed
         # progress=continue           #           what its doing rn
-        assert type(output) == list, "output != list"
-        timed = time() - time_from_start
+        if self.paused:
+            pausd = time() - self.paused_at
+            timed = time() - time_from_start - pausd
+        else:
+            timed = time() - time_from_start - self.paused_for
 
         try:
             current_frame = int(output[0][6:])
@@ -151,8 +167,30 @@ class Worker(Thread):
                 "time_in_s": time_in_s,
                 "conversion_speed": conversion_speed,
                 "estimated": estimated,
-                "percent": __ if (__ := round(percent*100, 2)) >= 0 else 0,}
+                "percent": __ if (__ := round(percent*100, 2)) >= 0 else 0,
+                "paused": self.paused}
             
-    def handle_signal(self, signal: int) -> bool:
-        if signal == 1:
-            return True
+    def handle_signal(self, signal: Signal) -> None:
+        if signal == Signal.STOP:
+            logger.info("Skipping current task.")
+            self.process.kill()
+
+        elif signal == Signal.QUIT:
+            logger.info("Killing worker...")
+            if self.process:
+                self.process.kill()
+                self.should_exit = True
+        
+        elif signal == Signal.PAUSE:
+            if self.process:
+                if self.paused:
+                    self.process.send_signal(sys_signal.SIGCONT)
+                    logger.info("Resuming ffmpeg...")
+                    self.paused_for += time() - self.paused_at
+                    self.paused = False
+                else:
+                    self.process.send_signal(sys_signal.SIGSTOP)
+                    logger.info("Pausing ffmpeg...")
+                    self.paused_at = time()
+                    self.paused = True
+

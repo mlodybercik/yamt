@@ -1,7 +1,7 @@
 <!-- TODO: add color to bars-->
-{% macro render_bar(percent) %}
+{% macro render_bar(percent, class="") %}
     <div class="progress">    
-        <div class="progress-bar" role="progressbar" style="width: {{ percent }}%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{ percent }}%</div>
+        <div class="progress-bar {{class}}" role="progressbar" style="width: {{ percent }}%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{ percent }}%</div>
     </div>
 {% endmacro %}
 

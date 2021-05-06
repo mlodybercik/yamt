@@ -4,14 +4,20 @@ const main_bar = document.getElementById("main-progress").getElementsByClassName
 const worker = document.getElementById("worker")
 const watcher = document.getElementById("watcher")
 const time_remaining = document.getElementById("time-remaining")    
+const pause = document.getElementById("pause")
+const stop = document.getElementById("stop")
 
-
+let paused = false
+let toggle_paused = false
 let last_seen_task = null
 
-function update_bar(bar, percent) {
+function update_bar(bar, percent, style=null) {
     const str = percent + "%"
     bar.innerText = str
     bar.style["width"] = str
+    if(style) {
+        bar.classList.toggle(style)
+    }
 }
 
 function update_avg(state) {
@@ -60,9 +66,19 @@ function update_site_state(request) {
     for(let i = 0; i<cpu_bars.length; i++) {
         update_bar(cpu_bars[i], request["cpu"]["cpu_usage"][i])
     }
-    if("curr_task" in request)
+    if("curr_task" in request)  
         if(request["curr_task"]) {
-            update_bar(main_bar, request["curr_task"]["percent"])
+            if(request["curr_task"]["paused"] != paused) {
+                console.log("gówno")
+                toggle_paused = true
+                paused = !paused
+            }
+            if(toggle_paused) {
+                update_bar(main_bar, request["curr_task"]["percent"], "bg-warning")
+                toggle_paused = false
+            } else {
+                update_bar(main_bar, request["curr_task"]["percent"])
+            }
         }
     update_state(request["states"])
     update_time(request)
@@ -85,3 +101,17 @@ window.onload = function () {
     get_state()
     console.log("Started fetching data every 3s")
 }
+
+async function pause_f() {
+    fetch("/pause", {method: "POST"}).then(response => {})
+}
+
+async function stop_f() {
+    fetch("/stop", {method: "POST"}).then(response => {})
+}
+
+
+try {
+    pause.onclick = pause_f
+    stop.onclick = stop_f
+} catch {}
