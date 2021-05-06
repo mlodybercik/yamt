@@ -2,10 +2,11 @@ from subprocess import DEVNULL, PIPE, Popen, run as sub_run, CalledProcessError
 from threading import Thread
 from pathlib import Path
 from time import time
-from typing import Literal, Union
+from typing import List, Literal, Union
 from . import better_split, logger
-from .type_declarations import State
+from .ffmpeg_type.type_declarations import State
 from ..queue import PeekableQueue, Empty, try_
+from.stdqueue import OutWatcher, find_progress
 
 class Worker(Thread):
     process = None
@@ -63,31 +64,38 @@ class Worker(Thread):
             running_settings = better_split(str(self.settings))
             self.state_flag = State.WORKING
             start_time = time()
+
             logger.info(f"Got work to do: {self.settings}")
-            self.process = Popen(running_settings, stdout=PIPE, stderr=DEVNULL, text=True)
+            self.process = Popen(running_settings, stdout=PIPE, stderr=PIPE, text=True)
+
+            logger.info(f"Created stderr and stdout watchers")
+            err, out = OutWatcher(self.process.stderr, 100), OutWatcher(self.process.stdout, 100)
+            err.start()
+            out.start()
 
             while self.process.poll() is None:
-                # self.process.stdout.readline() is blocking :/
-                # i could spawn subprocesses to watch stderr and stdout *shrug*
-                # TODO???: put stderr into some sort of circular buffer to show it to user
-                # for now, stderr goes brr inside /dev/null
-                temp = ""
-                while (output := self.process.stdout.readline()) and self.process.poll() is None:
-                    if "progress" not in output:
-                        temp += output
-                        continue
-                    else:
-                        temp += output
-                        self.state = self.update_state(video_duration, start_time, temp)
-                    try:
-                        temp = ""
-                        signal = try_(self.signal.get, Empty, block=False)
-                    except (ValueError, OSError):
-                        self.process.kill()
-                        self.should_exit = True
-                        break
-                if self.should_exit:
+                # first comes the check for signals.
+                # we'll be using blocking queues as loop timer
+                try:
+                    signal = try_(self.signal.get, Empty, block=True, timeout=1.0)
+                
+                except (ValueError, OSError):
+                    self.process.kill()
+                    self.should_exit = True
+                    err.has_to_stop = True
+                    out.has_to_stop = True
                     break
+
+                with out.lock:
+                    if (loc := out.buffer.find_and_return_slice(find_progress)):
+                        self.state = self.update_state(video_duration, start_time, loc)
+                
+            err.has_to_stop = True
+            out.has_to_stop = True
+
+            err.join()
+            out.join()
+            logger.info("Buffer watchers exited")
 
             self.state_flag = State.WAITING
             logger.info(f"Work done: {self.settings}")
@@ -103,7 +111,7 @@ class Worker(Thread):
         logger.debug("Worker dead")
 
 
-    def update_state(self, video_duration: float, time_from_start: float, output: str) -> dict:
+    def update_state(self, video_duration: float, time_from_start: float, output: List[str]) -> dict:
         # frame=12                    # int       current frame of an video
         # fps=0.00                    # float     conversion speed
         # stream_0_0_q=0.0            # 
@@ -116,7 +124,7 @@ class Worker(Thread):
         # drop_frames=0               # 
         # speed=   0x                 # float     conversion speed
         # progress=continue           #           what its doing rn
-        output = output.split("\n")
+        assert type(output) == list, "output != list"
         timed = time() - time_from_start
 
         try:

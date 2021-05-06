@@ -29,7 +29,7 @@ def kill():
 def get_update():
     data = {
         "curr_task": worker.state,
-        "states": [str(worker.state_flag), str(watcher.state_flag)],
+        "states": [worker.state_flag.value, watcher.state_flag.value],
         "cpu": get_info(),
     }
     return data

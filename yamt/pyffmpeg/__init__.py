@@ -2,7 +2,7 @@ import magic
 import shlex
 from dataclasses import dataclass, field
 from pathlib import PosixPath as Path
-from .type_declarations import SETTINGS, PositiveInteger, PositiveFloat, \
+from .ffmpeg_type.type_declarations import SETTINGS, PositiveInteger, PositiveFloat, \
                                Size, DefaultPostInit, Preset
 from ..forms import path_to_new_file_is_valid, path_to_file_is_valid
 
@@ -95,7 +95,9 @@ class ffmpegFullSettings(ffmpegSettings):
 
     def __str__(self):
         # it has to be `-y` or it'll hang waiting on stdin
-        command = f"ffmpeg -y -progress pipe:1 -i '{self.input}' {self.settings} '{self.output}'"
+        # pipe:1 => stdout
+        # -loglevel 32 => prints all the typicall ffmpeg info
+        command = f"ffmpeg -y -progress pipe:1 -loglevel 32 -i '{self.input}' {self.settings} '{self.output}'"
         return command
 
 def is_video(filepath):
