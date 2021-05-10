@@ -18,7 +18,7 @@ class ffmpegSettings:
     a_samplerate: PositiveInteger = PositiveInteger(-1)
     web_optimise: bool = False
     v_encoder: str = "COPY"
-    quality: PositiveInteger = PositiveInteger(30)
+    quality: PositiveInteger = PositiveInteger(-1)
     # TODO: settings vary from encoder to encoder, ill propably need to create seperate
     #       dataclasses to hold any info eg. h264 vs nvenc_h264
     v_bitrate: PositiveInteger = PositiveInteger(-1)
@@ -44,7 +44,6 @@ class ffmpegSettings:
         kwargs = {x:kwargs[x] for x in kwargs if x in SETTINGS}
         return cls(**kwargs)
         
-
     def __post_init__(self):
         DefaultPostInit.__post_init__(self)
         logger.debug(f"Created settings: {self.__str__()}")
@@ -96,7 +95,7 @@ class ffmpegFullSettings(ffmpegSettings):
     def __str__(self):
         # it has to be `-y` or it'll hang waiting on stdin
         # pipe:1 => stdout
-        # -loglevel 32 => prints all the typicall ffmpeg info
+        # -loglevel 32 => prints all the typical ffmpeg info
         command = f"ffmpeg -y -progress pipe:1 -loglevel 32 -i '{self.input}' {self.settings} '{self.output}'"
         return command
 

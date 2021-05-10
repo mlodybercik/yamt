@@ -51,8 +51,8 @@ class FileWatcher:
 
     @property
     def state_flag(self):
-        if not self.is_alive():
-            return State.DEAD
-        else:
+        if self.is_alive():
             return State.WORKING
+        else:
+            return State.DEAD
         

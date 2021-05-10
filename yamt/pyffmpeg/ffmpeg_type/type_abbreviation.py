@@ -1,4 +1,5 @@
 from .type_declarations import FRAMERATE_TYPE, V_ENCODERS, A_ENCODERS, QUALITY_PRESET
+
 FRAMERATE_TYPE_NAMES = {
     "PS": "Passthrough",
     "REGEN": "Discard frame timestamps",

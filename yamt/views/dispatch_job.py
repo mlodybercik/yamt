@@ -1,7 +1,7 @@
+import os
 from pathlib import Path
 from flask import Blueprint, render_template, redirect, request, jsonify
 from jinja2 import Markup, escape
-import os
 from . import logger
 from ..models import Settings
 from ..forms.dispatch_job import Start
@@ -33,7 +33,6 @@ def dispatch_backend(preset_id: int, input: Path, output: Path):
                     logger.warning("Tried to dispatch work to empty queue")
     return False
 
-
 @dispatch_job.route("/dispatch_job", methods=("GET", "POST"))
 def dispatch():
     start = Start(meta={"csrf": False})
@@ -48,11 +47,10 @@ def dispatch():
 
 @dispatch_job.route("/bulk_dispatch", methods=("GET", "POST"))
 def bulk_dispatch():
-    options = Settings.create_select()
-    options = "".join([f"<option value={escape(option[0])}>{escape(option[1])}</option>" for option in options])
-    options = Markup(options)
-        
     if request.method == "GET":
+        options = Settings.create_select()
+        options = "".join([f"<option value={escape(option[0])}>{escape(option[1])}</option>" for option in options])
+        options = Markup(options)
         return render_template("bulk_dispatch.html", options=options)
     else:
         if request.is_json:

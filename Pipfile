@@ -13,9 +13,9 @@ python-magic = "*"
 pathvalidate = "*"
 sqlalchemy = "==1.3"
 psutil = "*"
-uwsgi = "*"
 
 [dev-packages]
+pytest = "*"
 
 [requires]
 python_version = "3.8"

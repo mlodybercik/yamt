@@ -40,89 +40,89 @@ class Worker(Thread):
             return length
         except CalledProcessError:
             logger.warning(f"Couldn't find the length {input}")
-            return -1
+            return -1         
 
     def run(self) -> None:
-        signal = None
-        logger.info("Worker started, waiting for inputs...")
+        logger.debug("Worker spawned")
         self.state_flag = State.WAITING
-        # runner loop
-        while not self.should_exit:
-            # w8 loop
-            while True:
-                try:
-                    self.settings = try_(self.queue.get, Empty, timeout=1)
-                    signal = try_(self.signal.get, Empty, timeout=1)
-                except (ValueError, OSError):
-                    self.should_exit = True
-                    break
+        while True:
+            try:
+                message = try_(self.signal.get, Empty, timeout=1)
+                settings = try_(self.queue.get, Empty, timeout=1)
+            except (ValueError, OSError):
+                self.should_exit = True
+                break
 
-                if signal:
-                    self.handle_signal(signal)
-                
-                if self.should_exit or self.settings:
-                    break
+            if message:
+                self.handle_signal(message)
+
+            if settings:
+                self.execute_task(settings)
             
-
             if self.should_exit:
                 break
-            
-            video_duration = self.get_video_duration(self.settings.input)
-
-            running_settings = better_split(str(self.settings))
-            self.state_flag = State.WORKING
-            start_time = time()
-
-            logger.debug(f"Got work to do: {self.settings}")
-            self.process = Popen(running_settings, stdout=PIPE, stderr=PIPE, text=True)
-
-            err, out = OutWatcher(self.process.stderr, 100), OutWatcher(self.process.stdout, 100)
-            err.start()
-            out.start()
-            logger.info(f"Created stderr and stdout watchers")
-
-            while self.process.poll() is None:
-                # first comes the check for signals.
-                # we'll be using blocking queues as loop timer
-                try:
-                    signal = try_(self.signal.get, Empty, block=True, timeout=1.0)
-                
-                except (ValueError, OSError):
-                    self.process.kill()
-                    self.should_exit = True
-                    err.has_to_stop = True
-                    out.has_to_stop = True
-                    break
-                
-                if signal:
-                    self.handle_signal(signal)
-
-                with out.lock:
-                    if (loc := out.buffer.find_and_return_slice(find_progress)):
-                        self.state = self.update_state(video_duration, start_time, loc)
-                
-            err.has_to_stop = True
-            out.has_to_stop = True
-
-            err.join()
-            out.join()
-            logger.info("Buffer watchers exited")
-
-            self.state_flag = State.WAITING
-            logger.info(f"Work done: {self.settings}")
-            if self.process.returncode:
-                logger.warning(f"Subprocess exited: {self.process.returncode}")
-            else:
-                logger.info(f"Subprocess exited: {self.process.returncode}")
-            self.current_task_no += 1
-            self.settings = None
-            self.state = None
-            self.paused_at = 0
-            self.paused_for = 0
-
+        
         self.state_flag = State.DEAD
         logger.debug("Worker dead")
 
+    def execute_task(self, settings):
+        self.settings = settings
+
+        running_settings = better_split(str(self.settings))
+        video_duration = self.get_video_duration(self.settings.input)
+
+        self.state_flag = State.WORKING
+        start_time = time()
+
+        logger.info(f"Got work to do...")
+        logger.debug(f"{self.settings}")
+        self.process = Popen(running_settings, stdout=PIPE, stderr=PIPE, text=True)
+
+        err, out = OutWatcher(self.process.stderr, 100), OutWatcher(self.process.stdout, 100)
+        err.start()
+        out.start()
+        logger.debug(f"Created stderr and stdout watchers")
+
+        while self.process.poll() is None:
+            # first comes the check for signals.
+            # we'll be using blocking queues as loop timer
+            try:
+                message = try_(self.signal.get, Empty, block=True, timeout=1.0)
+            
+            except (ValueError, OSError):
+                self.process.kill()
+                self.should_exit = True
+                err.has_to_stop = True
+                out.has_to_stop = True
+                break
+            
+            if message:
+                self.handle_signal(message)
+
+            with out.lock:
+                if (loc := out.buffer.find_and_return_slice(find_progress)):
+                    self.state = self.update_state(video_duration, start_time, loc)
+            
+        err.has_to_stop = True
+        out.has_to_stop = True
+
+        err.join()
+        out.join()
+        logger.debug("Buffer watchers exited")
+
+        self.state_flag = State.WAITING
+        logger.info(f"Work done")
+        if self.process.returncode:
+            logger.warning(f"Subprocess exited: {self.process.returncode}")
+        else:
+            logger.info(f"Subprocess exited: {self.process.returncode}")
+
+        # cleanup
+        self.current_task_no += 1
+        self.settings = None
+        self.state = None
+        self.paused_at = 0
+        self.paused_for = 0
 
     def update_state(self, video_duration: float, time_from_start: float, output: List[str]) -> dict:
         # frame=12                    # int       current frame of an video
@@ -188,9 +188,10 @@ class Worker(Thread):
                     logger.info("Resuming ffmpeg...")
                     self.paused_for += time() - self.paused_at
                     self.paused = False
+                    self.state_flag = State.WORKING
                 else:
                     self.process.send_signal(sys_signal.SIGSTOP)
                     logger.info("Pausing ffmpeg...")
                     self.paused_at = time()
                     self.paused = True
-
+                    self.state_flag = State.PAUSED

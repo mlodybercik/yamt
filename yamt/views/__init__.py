@@ -1,7 +1,7 @@
 import logging
-logger = logging.getLogger("views")
-
 import psutil
+
+logger = logging.getLogger("views")
 
 def get_info():
     return {

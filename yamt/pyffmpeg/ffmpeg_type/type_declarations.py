@@ -148,6 +148,7 @@ class State(Enum):
     DEAD = 0
     WAITING = 1
     WORKING = 2
+    PAUSED = 3
 
 class Signal(Enum):
     STOP = 0

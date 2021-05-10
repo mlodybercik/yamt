@@ -1,8 +1,10 @@
 from threading import Thread, Lock
 from io import TextIOWrapper
-from typing import Any, Callable, List, Union
+from typing import Any, Callable, Generic, List, Union, TypeVar
 
-class RoundBuffer:
+T = TypeVar("T")
+
+class RoundBuffer(Generic[T]):
     # deque doesnt work how i want it to
     # also, reusing my old old code
     __slots__ = ["__array__", "__index__", "max_len"]
@@ -12,10 +14,10 @@ class RoundBuffer:
         self.__array__ = []
         self.__index__ = 0
 
-    def __replace__(self, index: int, obj: Any):
+    def __replace__(self, index: int, obj: T):
         self.__array__[index] = obj
 
-    def __getitem__(self, i: int) -> Any:
+    def __getitem__(self, i: int) -> T:
         return self.__array__[i]
 
     def append(self, obj: Any) -> None:
@@ -26,13 +28,13 @@ class RoundBuffer:
             self.__array__.append(obj)
             self.__index__ += 1
 
-    def dump_list(self) -> List[Any]:
+    def dump_list(self) -> List[T]:
         if len(self.__array__) < self.max_len:
             return self.__array__
         else:
             return [self.__array__[x % self.max_len] for x in range(self.__index__, self.__index__ + self.max_len)]
 
-    def find_and_return_slice(self, f: Callable[[Any], bool], length: int = 12) -> Union[List[Any], None]:
+    def find_and_return_slice(self, f: Callable[[T], bool], length: int = 12) -> Union[List[T], None]:
         list_ = self.dump_list()
         index = -1
         for i, item in enumerate(list_[::-1]):
